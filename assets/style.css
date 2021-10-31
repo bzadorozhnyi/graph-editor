@@ -1,0 +1,104 @@
+.graph_and_command {
+    width: 1000px;
+    height: 600px;
+    /*border: solid;*/
+}
+
+.part_network {
+    width: 600px;
+    height: 100%;
+    float: left;
+}
+
+.Command_Info {
+    width: 300px;
+    height: 300px;
+    float: right;
+    /*border: solid;*/
+}
+
+.CommandSelector {
+    float: top;
+    background-color: rgba(173, 171, 171, 0.377);
+    border-radius: 5px;
+    /*border: solid;*/
+    height: 100px;
+    position: relative;
+}
+
+.InfoOutput {
+    /*border: solid;
+    border-color: red;*/
+    background-color: #f0f7fba2;
+    background-position: 9px 0px;
+    background-repeat: no-repeat;
+    border-left: solid 4px #8b9297;
+    line-height: 18px;
+    overflow: hidden;
+    padding: 15px 30px;
+    position: relative;
+    top: 10px;
+    white-space: 'pre-wrap';
+}
+
+.Submit_button {
+    background-color: #8e9c98;
+	border-radius: 32px;
+	display: inline-block;
+	cursor: pointer;
+	color: #000000;
+	font-family: "system-ui";
+	font-size: 18px;
+	font-weight: bold;
+	padding: 8px 13px;
+	text-decoration: none;
+    position: absolute;
+    right: 5px;
+    bottom: 5px;
+}
+
+.custom-tabs-container {
+    width: 85%;
+}
+.custom-tabs {
+    border-top-left-radius: 3px;
+    background-color: #f9f9f9;
+    padding: 0px 24px;
+    border-bottom: 1px solid #d6d6d6;
+}
+
+.custom-tab {
+    color:#586069;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-top: 3px solid transparent !important;
+    border-left: 0px !important;
+    border-right: 0px !important;
+    border-bottom: 0px !important;
+    background-color: #fafbfc;
+    padding: 12px !important;
+    font-family: "system-ui";
+    font-weight: 700;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+.custom-tab--selected {
+    color: black;
+    box-shadow: 1px 1px 0px white;
+    border-left: 1px solid lightgrey !important;
+    border-right: 1px solid lightgrey !important;
+    border-top: 5px solid #3c3d3b !important;
+}
+
+.tab {
+    height: 100px;
+    box-shadow: 0 0 5px #939393;
+}
+
+.textarea {
+    width: 100%;
+    height: 500px;
+    box-sizing: border-box;
+    resize: none;
+}
