@@ -12,17 +12,11 @@ server = app.server
 
 app.layout = html.Div([
     html.Div(className='graph_and_command', children=[
-        html.Div(className='part_network', children=[  
+        html.Div(className='part_network', children=[
             cyto.Cytoscape(
                 id='cytoscape-elements-callbacks',
                 elements=[],
                 autoRefreshLayout=False,
-                style={
-                    'border': 'solid',
-                    'border-radius': '25px',
-                    'height': '600px',
-                    'width': '100%'
-                },
                 stylesheet=[
                     {
                         'selector': 'node',
@@ -81,14 +75,17 @@ app.layout = html.Div([
                 }
             )
         ]),
-        html.Div(className='Command_Info', children = [
-            html.Div(className = 'CommandSelector', children = [
+        html.Div(className='Command_Info', children=[
+            html.Div(className='CommandSelector', children=[
                 dcc.Dropdown(
                     id='command_dropdown',
                     options=[
-                        {'label': 'Кількість компоненти зв\'язності', 'value': 'COMPONENT'},
-                        {'label': 'Цикломатичне число графа', 'value': 'CIRCUIT RANK'},
-                        {'label': 'Степінь вершин графа', 'value': 'Degree of vertexs'},
+                        {'label': 'Number of components in graph',
+                            'value': 'COMPONENT'},
+                        {'label': 'Circuit rank',
+                            'value': 'CIRCUIT RANK'},
+                        {'label': 'Degree of vertices',
+                            'value': 'Degree of vertices'},
                         {'label': 'Обхід в глибину', 'value': 'DFS'},
                         {'label': 'Обхід в ширину', 'value': 'BFS'},
                         {'label': 'Точки зчеплення', 'value': 'Articulation Point'},
@@ -96,31 +93,32 @@ app.layout = html.Div([
                     ],
                     value=''
                 ),
-                html.Button('Submit', className='Submit_button', id='submit_button', n_clicks=0),
+                html.Button('Submit', className='Submit_button',
+                            id='submit_button', n_clicks=0),
             ]),
-            html.Div(className = 'InfoOutput', id='dd-output-container', children = [
-                html.Pre(id = 'output-container')
+            html.Div(className='InfoOutput', id='dd-output-container', children=[
+                html.Pre(id='output-container')
             ])
-        ])
-    ]),
-    html.Div(className='two columns', style={'position': 'absolute', 'right': '10px', 'top': '10px'}, children=[
-        dcc.Tabs(id='tabs', children=[
-            dcc.Tab(label='Undirecred edges', className='custom-tab', selected_className='custom-tab--selected', children=[
-                html.Div(className='tab', children=[
-                    dcc.Textarea(
-                        id='textarea_undirected_edges',
-                        value='',
-                        className='textarea'
-                    )
-                ])
-            ]),
-            dcc.Tab(label='Direcred edges', className='custom-tab', selected_className='custom-tab--selected', children=[
-                html.Div(className='tab', children=[
-                    dcc.Textarea(
-                        id='textarea_directed_edges',
-                        value='',
-                        className='textarea'
-                    )
+        ]),
+        html.Div(className='two-columns', children=[
+            dcc.Tabs(id='tabs', children=[
+                dcc.Tab(label='Undirecred edges', className='custom-tab', selected_className='custom-tab--selected', children=[
+                    html.Div(className='tab', children=[
+                        dcc.Textarea(
+                            id='textarea_undirected_edges',
+                            value='',
+                            className='textarea'
+                        )
+                    ])
+                ]),
+                dcc.Tab(label='Direcred edges', className='custom-tab', selected_className='custom-tab--selected', children=[
+                    html.Div(className='tab', children=[
+                        dcc.Textarea(
+                            id='textarea_directed_edges',
+                            value='',
+                            className='textarea'
+                        )
+                    ])
                 ])
             ])
         ])
@@ -142,7 +140,8 @@ def update_graph(textarea_undirected_edges, textarea_directed_edges):
     nodes, edges = [], []
     all_nodes = set()
 
-    all_value = str(textarea_undirected_edges) + '\n' + str(textarea_directed_edges)
+    all_value = str(textarea_undirected_edges) + \
+        '\n' + str(textarea_directed_edges)
     for line in all_value.split('\n'):
         tline = line.split()
         for j in range(min(len(tline), 2)):
@@ -164,11 +163,13 @@ def update_graph(textarea_undirected_edges, textarea_directed_edges):
         else:
             if len(tline) == 2:
                 edges.append(
-                    {'data': {'source': 'n' + tline[0], 'target': 'n' + tline[1]}}
+                    {'data': {'source': 'n' +
+                              tline[0], 'target': 'n' + tline[1]}}
                 )
             else:
                 edges.append(
-                    {'data': {'source': 'n' + tline[0], 'target': 'n' + tline[1], 'weight': tline[2]}}
+                    {'data': {'source': 'n' +
+                              tline[0], 'target': 'n' + tline[1], 'weight': tline[2]}}
                 )
 
     for line in textarea_directed_edges.split('\n'):
@@ -178,14 +179,17 @@ def update_graph(textarea_undirected_edges, textarea_directed_edges):
         else:
             if len(tline) == 2:
                 edges.append(
-                {'data': {'source': 'n' + tline[0], 'target': 'n' + tline[1]}, 'classes': 'directed-edges'}
-            )
+                    {'data': {
+                        'source': 'n' + tline[0], 'target': 'n' + tline[1]}, 'classes': 'directed-edges'}
+                )
             else:
                 edges.append(
-                {'data': {'source': 'n' + tline[0], 'target': 'n' + tline[1], 'weight': tline[2]}, 'classes': 'directed-edges'}
-            )
+                    {'data': {'source': 'n' + tline[0], 'target': 'n' +
+                              tline[1], 'weight': tline[2]}, 'classes': 'directed-edges'}
+                )
 
     return nodes + edges
+
 
 @app.callback(
     Output('output-container', 'children'),
@@ -200,11 +204,11 @@ def update_message(n_clicks, value, data, undirected_edges, directed_edges):
         n_clicks = 0
         try:
             if value == 'COMPONENT':
-                return 'Кількість компонент зв\'язності = {}'.format(algorithm.Component(undirected_edges, directed_edges))
+                return 'Number of components in graph = {}'.format(algorithm.component(undirected_edges, directed_edges))
             elif value == 'CIRCUIT RANK':
-                return 'Цикломатичне число = {}'.format(algorithm.CircuitRank(undirected_edges, directed_edges))
-            elif value == 'Degree of vertexs':
-                return 'Степені вершин графа :\n' + '\n'.join('{} : {}'.format(k, str(v)) for k, v in algorithm.Degree(undirected_edges, directed_edges).items())
+                return 'Circuit rank = {}'.format(algorithm.CircuitRank(undirected_edges, directed_edges))
+            elif value == 'Degree of vertices':
+                return 'Degree of vertices :\n' + '\n'.join('{} : {}'.format(k, str(v)) for k, v in algorithm.Degree(undirected_edges, directed_edges).items())
             elif value == 'DFS':
                 if data is None:
                     return 'Оберіть вершину для початку обходу'
@@ -224,5 +228,6 @@ def update_message(n_clicks, value, data, undirected_edges, directed_edges):
 
 # --------------------------------------------
 
+
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)

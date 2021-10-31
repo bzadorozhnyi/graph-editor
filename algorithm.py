@@ -1,76 +1,84 @@
 import copy
 
-G, used, SearchAnswer = dict(), set(), set()
+graph, used, SearchAnswer = dict(), set(), set()
 isNumbers = False
 GTemp = dict()
 
 def isNumber(x: str) -> bool:
 	return (x.isdigit() and (x == '0' or x[0] != '0'))
 
-def initialization(undirected_edges, directed_edges):
-    global G, used, isNumbers
-    G, used = dict(), set()
-    all_edges = str(undirected_edges) + '\n' + str(directed_edges)
+def initialization(undirected_edges: str, directed_edges: str):
+    global graph, used, isNumbers
+    graph, used = dict(), set()
+    all_edges = undirected_edges + '\n' + directed_edges
 
     if len(all_edges) > 0:
         for line in all_edges.split('\n'):
             tline = line.split()
             if len(tline) > 1:
-                G[tline[0]] = G.get(tline[0], []) + [tline[1]]
-                G[tline[1]] = G.get(tline[1], []) + [tline[0]]
+                graph[tline[0]] = graph.get(tline[0], []) + [tline[1]]
+                graph[tline[1]] = graph.get(tline[1], []) + [tline[0]]
             else:
                 if len(tline) > 0:
-                    G[tline[0]] = G.get(tline[0], [])
+                    graph[tline[0]] = graph.get(tline[0], [])
 
-    isNumbers = all([isNumber(i) for i in G.keys()]) and all([isNumber(j) for i in G.values() for j in i])
+    isNumbers = all([isNumber(i) for i in graph.keys()]) and all([isNumber(j) for i in graph.values() for j in i])
     if isNumbers:
         GTemp1 = dict()
-        for k, v in G.items():
+        for k, v in graph.items():
             GTemp1[int(k)] = list(map(int, v))
-        G = GTemp1
+        graph = GTemp1
     
-    G = dict(sorted(G.items()))
-    for i in G.keys():
-        G[i] = sorted(G.get(i, []))
+    graph = dict(sorted(graph.items()))
+    for i in graph.keys():
+        graph[i] = sorted(graph.get(i, []))
 
-
-def dfs_Component(v):
-    global G, used
+# check all unvisited vertices
+def dfs_component(v):
+    global graph, used
 
     used.add(v)
-    for i in G[v]:
+    for i in graph[v]:
         if i not in used:
-            dfs_Component(i)
+            dfs_component(i)
 
-
-def Component(undirected_edges, directed_edges):
-    answer = 0
-
+# find number of components in graph
+def component(undirected_edges: str, directed_edges: str) -> int:
     initialization(undirected_edges, directed_edges)
 
-    global G, used
+    global graph, used
+    answer = 0
 
-    for i in G.keys():
+    for i in graph.keys():
         if i not in used:
             answer += 1
-            dfs_Component(i)
+            dfs_component(i)
 
     return answer
 
 
-def CircuitRank(undirected_edges, directed_edges):
-    global G, used
+def CircuitRank(undirected_edges: str, directed_edges: str) -> int:
+    # CircuitRank = (number of edges) - (number of vertices) + (number of components)
+    global graph, used
+    
+    # Add (number of edges)
     answer = len(list(filter(lambda x: (x is not None and len(x.split()) >= 2), (undirected_edges + '\n' + directed_edges).split('\n'))))
-    answer += Component(undirected_edges, directed_edges) - len(G.keys())
+
+    # Subtract (number of vertices)
+    answer -= len(graph.keys())
+
+    # Add (number of components)
+    answer += component(undirected_edges, directed_edges)
 
     return answer
 
-
-def Degree(undirected_edges, directed_edges):
-    all_edges = str(undirected_edges) + '\n' + str(directed_edges)
+# Degree of vertices
+def Degree(undirected_edges: str, directed_edges: str) -> dict:
+    all_edges = undirected_edges + '\n' + directed_edges
     answer = dict()
 
     if len(all_edges) > 0:
+        # count number of edges that connect to verticel
         for line in all_edges.split('\n'):
             tline = line.split()
             if len(tline) > 1:
@@ -80,22 +88,23 @@ def Degree(undirected_edges, directed_edges):
                 if len(tline) > 0:
                     answer[tline[0]] = answer.get(tline[0], 0)
 
+    # if all vertices is numbers that sort it as numbers
     if all([isNumber(i) for i in answer.keys()]):
         return dict(sorted(answer.items(), key = lambda i: int(i[0])))
     return dict(sorted(answer.items()))
 
 
 def dfs(v):
-    global G, used, SearchAnswer
+    global graph, used, SearchAnswer
     SearchAnswer.append(str(v))
     used.add(v)
-    for i in G[v]:
+    for i in graph[v]:
         if i not in used:
             dfs(i)
 
 
 def DFS(start_vertex, undirected_edges, directed_edges):
-    global G, used, SearchAnswer
+    global graph, used, SearchAnswer
     initialization(undirected_edges, directed_edges)
     SearchAnswer = []
 
@@ -105,7 +114,7 @@ def DFS(start_vertex, undirected_edges, directed_edges):
     
     dfs(start_vertex)
 
-    for i in G.keys():
+    for i in graph.keys():
         if i not in used:
             dfs(i)
 
@@ -113,7 +122,7 @@ def DFS(start_vertex, undirected_edges, directed_edges):
 
 
 def BFS(start_vertex, undirected_edges, directed_edges):
-    global G, used, SearchAnswer
+    global graph, used, SearchAnswer
     initialization(undirected_edges, directed_edges)
 
     global isNumbers
@@ -127,7 +136,7 @@ def BFS(start_vertex, undirected_edges, directed_edges):
         v = q[0]
         SearchAnswer.append(str(v))
         q.pop(0)
-        for i in G[v]:
+        for i in graph[v]:
             if i not in used:
                 q.append(i)
                 used.add(i)
@@ -143,12 +152,12 @@ def dfs_Point_Bridge(v):
             dfs_Point_Bridge(j)
 
 def ArticulationPoint(undirected_edges, directed_edges):
-    global G, used, GTemp
-    CNT_Components = Component(undirected_edges, directed_edges)
+    global graph, used, GTemp
+    CNT_Components = component(undirected_edges, directed_edges)
     
     answer = set()
-    for i in G.keys():
-        GTemp = copy.deepcopy(G)
+    for i in graph.keys():
+        GTemp = copy.deepcopy(graph)
         used = set()
         GTemp[i] = []
         T = 0
@@ -166,8 +175,8 @@ def ArticulationPoint(undirected_edges, directed_edges):
     return sorted(answer)
 
 def Bridges(undirected_edges, directed_edges):
-    global G, used, GTemp, isNumbers
-    CNT_Components = Component(undirected_edges, directed_edges)
+    global graph, used, GTemp, isNumbers
+    CNT_Components = component(undirected_edges, directed_edges)
 
     all_edges = str(undirected_edges) + '\n' + str(directed_edges)
     answer = set()
@@ -178,7 +187,7 @@ def Bridges(undirected_edges, directed_edges):
             if isNumbers:
                 tline = list(map(int, tline))
             
-            GTemp = copy.deepcopy(G)
+            GTemp = copy.deepcopy(graph)
             used = set()
             if len(tline) > 1:
                 GTemp[tline[0]].remove(tline[1])

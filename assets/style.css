@@ -1,6 +1,8 @@
 .graph_and_command {
-    width: 1000px;
-    height: 600px;
+    display: flex;
+    justify-content: space-between;
+    /* width: 1000px;
+    height: 600px; */
     /*border: solid;*/
 }
 
@@ -13,7 +15,7 @@
 .Command_Info {
     width: 300px;
     height: 300px;
-    float: right;
+    margin: 20px;
     /*border: solid;*/
 }
 
@@ -57,9 +59,6 @@
     bottom: 5px;
 }
 
-.custom-tabs-container {
-    width: 85%;
-}
 .custom-tabs {
     border-top-left-radius: 3px;
     background-color: #f9f9f9;
@@ -91,6 +90,13 @@
     border-top: 5px solid #3c3d3b !important;
 }
 
+#cytoscape-elements-callbacks {
+    border: solid;
+    border-radius: 25px;
+    height: 600px;
+    width: 100%;
+}
+
 .tab {
     height: 100px;
     box-shadow: 0 0 5px #939393;
@@ -101,4 +107,8 @@
     height: 500px;
     box-sizing: border-box;
     resize: none;
+}
+
+.two-columns {
+    margin: 20px;
 }
