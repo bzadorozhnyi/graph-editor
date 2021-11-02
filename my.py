@@ -81,15 +81,15 @@ app.layout = html.Div([
                     id='command_dropdown',
                     options=[
                         {'label': 'Number of components in graph',
-                            'value': 'COMPONENT'},
+                            'value': 'components'},
                         {'label': 'Circuit rank',
-                            'value': 'CIRCUIT RANK'},
+                            'value': 'circuit rank'},
                         {'label': 'Degree of vertices',
-                            'value': 'Degree of vertices'},
-                        {'label': 'Depth-first search', 'value': 'DFS'},
-                        {'label': 'Breadth-first search', 'value': 'BFS'},
-                        {'label': 'Cupoints', 'value': 'Cupoint'},
-                        {'label': 'Bridges', 'value': 'Bridge'}
+                            'value': 'degree of vertices'},
+                        {'label': 'Depth-first search', 'value': 'dfs'},
+                        {'label': 'Breadth-first search', 'value': 'bfs'},
+                        {'label': 'Cupoints', 'value': 'cupoints'},
+                        {'label': 'Bridges', 'value': 'bridges'}
                     ],
                     value=''
                 ),
@@ -202,29 +202,29 @@ def update_graph(textarea_undirected_edges, textarea_directed_edges):
 def update_message(n_clicks, value, data, undirected_edges, directed_edges):
     if n_clicks > 0:
         n_clicks = 0
-        # try:
-        if value == 'COMPONENT':
-            return 'Number of components in graph = {}'.format(algorithm.component(dict(), set(), undirected_edges, directed_edges))
-        elif value == 'CIRCUIT RANK':
-            return 'Circuit rank = {}'.format(algorithm.circuit_rank(dict(), set(), undirected_edges, directed_edges))
-        elif value == 'Degree of vertices':
-            return 'Degree of vertices :\n' + '\n'.join('{} : {}'.format(k, str(v)) for k, v in algorithm.degree(undirected_edges, directed_edges).items())
-        elif value == 'DFS':
-            if data is None:
-                return 'Choose start vertex'
-            return 'Depth-first search : \n' + '\n'.join(algorithm.depth_first_search(dict(), set(), data['label'], undirected_edges, directed_edges))
-        elif value == 'BFS':
-            if data is None:
-                return 'Choose start vertex'
-            return 'Breadth-first search : \n' + '\n'.join(algorithm.breadth_first_search(dict(), set(), data['label'], undirected_edges, directed_edges))
-        elif value == 'Cupoint':
-            return 'Cupoints :\n' + '\n'.join('{}'.format(i) for i in algorithm.cutpoints(dict(), set(), undirected_edges, directed_edges))
-        elif value == 'Bridge':
-            return 'Bridges :\n' + '\n'.join('{}'.format(i) for i in algorithm.bridges(dict(), set(), undirected_edges, directed_edges))
-        else:
-            return 'Command hasn\'t chosen'
-        # except BaseException:
-        #     return 'Oops, something went wrong.'
+        try:
+            if value == 'components':
+                return 'Number of components in graph = {}'.format(algorithm.component(dict(), set(), undirected_edges, directed_edges))
+            elif value == 'circuit rank':
+                return 'Circuit rank = {}'.format(algorithm.circuit_rank(dict(), set(), undirected_edges, directed_edges))
+            elif value == 'degree of vertices':
+                return 'Degree of vertices :\n' + '\n'.join('{} : {}'.format(k, str(v)) for k, v in algorithm.degree(undirected_edges, directed_edges).items())
+            elif value == 'dfs':
+                if data is None:
+                    return 'Choose start vertex'
+                return 'Depth-first search : \n' + '\n'.join(algorithm.depth_first_search(data['label'], undirected_edges, directed_edges))
+            elif value == 'bfs':
+                if data is None:
+                    return 'Choose start vertex'
+                return 'Breadth-first search : \n' + '\n'.join(algorithm.breadth_first_search(data['label'], undirected_edges, directed_edges))
+            elif value == 'cupoints':
+                return 'Cupoints :\n' + '\n'.join('{}'.format(i) for i in algorithm.cutpoints(undirected_edges, directed_edges))
+            elif value == 'bridges':
+                return 'Bridges :\n' + '\n'.join('{}'.format(i) for i in algorithm.bridges(undirected_edges, directed_edges))
+            else:
+                return 'Command hasn\'t chosen'
+        except BaseException:
+            return 'Oops, something went wrong.'
 
 # --------------------------------------------
 

@@ -11,7 +11,7 @@ def isNumbers(graph: dict) -> bool:
 # initialize list of edges in graph from user input
 
 
-def initialization(graph: dict, used: set, undirected_edges: str, directed_edges: str):
+def initialization(graph: dict, used: set, undirected_edges: str, directed_edges: str, all_undirected = False):
     graph.clear()
     used.clear()
 
@@ -28,6 +28,8 @@ def initialization(graph: dict, used: set, undirected_edges: str, directed_edges
         tline = line.split()
         if len(tline) > 1:
             graph[tline[0]] = graph.get(tline[0], []) + [tline[1]]
+            if all_undirected:
+                graph[tline[1]] = graph.get(tline[1], []) + [tline[0]]
         else:
             if len(tline) > 0:
                 graph[tline[0]] = graph.get(tline[0], [])
@@ -48,7 +50,7 @@ def initialization(graph: dict, used: set, undirected_edges: str, directed_edges
 # find number of components in graph
 
 
-def component(graph: dict, used: set, undirected_edges: str, directed_edges: str) -> int:
+def component(graph: dict(), used: set(), undirected_edges: str, directed_edges: str) -> int:
     initialization(graph, used, undirected_edges, directed_edges)
 
     # check all unvisited vertices
@@ -67,7 +69,7 @@ def component(graph: dict, used: set, undirected_edges: str, directed_edges: str
     return answer
 
 
-def circuit_rank(graph: dict, used: dict, undirected_edges: str, directed_edges: str) -> int:
+def circuit_rank(graph: dict(), used: set(), undirected_edges: str, directed_edges: str) -> int:
     # Circuit rank = (number of edges) - (number of vertices) + (number of components)
     # Add (number of edges)
     answer = len(list(filter(lambda x: (x is not None and len(
@@ -106,7 +108,9 @@ def degree(undirected_edges: str, directed_edges: str) -> dict:
 
 
 # initialize and set start vertex for dfs
-def depth_first_search(graph: dict, used: set, start_vertex: str, undirected_edges: str, directed_edges: str) -> list:
+def depth_first_search(start_vertex: str, undirected_edges: str, directed_edges: str) -> list:
+    graph = dict()
+    used = set()
     initialization(graph, used, undirected_edges, directed_edges)
 
     # dfs recursion
@@ -131,7 +135,9 @@ def depth_first_search(graph: dict, used: set, start_vertex: str, undirected_edg
     return search_answer
 
 
-def breadth_first_search(graph: dict, used: set, start_vertex: str, undirected_edges: str, directed_edges: str) -> list:
+def breadth_first_search(start_vertex: str, undirected_edges: str, directed_edges: str) -> list:
+    graph = dict()
+    used = set()
     initialization(graph, used, undirected_edges, directed_edges)
     # if all vertices is numbers then start vertex must be number
     if len(graph) > 0 and isinstance(list(graph.keys())[0], int):
@@ -160,8 +166,10 @@ class node():
         self.up = up  # auxiliary variable on the basics of which we will find the answer
 
 
-def cutpoints(graph: dict, used: set, undirected_edges: str, directed_edges: str) -> list:
-    initialization(graph, used, undirected_edges, directed_edges)
+def cutpoints(undirected_edges: str, directed_edges: str) -> list:
+    graph = dict()
+    used = set()
+    initialization(graph, used, undirected_edges, directed_edges, True)
 
     def dfs_cutpoints(v, ancestor: int, time_counter: int):
         used.add(v)
@@ -190,7 +198,7 @@ def cutpoints(graph: dict, used: set, undirected_edges: str, directed_edges: str
     return search_answer
 
 
-def bridges(graph: dict, used: set, undirected_edges: str, directed_edges: str) -> list:
+def bridges(undirected_edges: str, directed_edges: str) -> list:
     def dfs_bridges(v, ancestor: int, time_counter: int):
         used.add(v)
         dp[v] = dp.get(v, node(time_counter, time_counter))
@@ -205,7 +213,9 @@ def bridges(graph: dict, used: set, undirected_edges: str, directed_edges: str) 
                 if dp[to].up > dp[v].time_in:
                     search_answer.append((v, to))
 
-    initialization(graph, used, undirected_edges, directed_edges)
+    graph = dict()
+    used = set()
+    initialization(graph, used, undirected_edges, directed_edges, True)
     dp, search_answer = dict(), []
     # go through all components
     for i in graph.keys():
