@@ -86,7 +86,7 @@ app.layout = html.Div([
                             'value': 'CIRCUIT RANK'},
                         {'label': 'Degree of vertices',
                             'value': 'Degree of vertices'},
-                        {'label': 'Обхід в глибину', 'value': 'DFS'},
+                        {'label': 'Depth-first search', 'value': 'DFS'},
                         {'label': 'Обхід в ширину', 'value': 'BFS'},
                         {'label': 'Точки зчеплення', 'value': 'Articulation Point'},
                         {'label': 'Мости', 'value': 'Bridge'}
@@ -204,15 +204,15 @@ def update_message(n_clicks, value, data, undirected_edges, directed_edges):
         n_clicks = 0
         try:
             if value == 'COMPONENT':
-                return 'Number of components in graph = {}'.format(algorithm.component(undirected_edges, directed_edges))
+                return 'Number of components in graph = {}'.format(algorithm.component(dict(), set(), undirected_edges, directed_edges))
             elif value == 'CIRCUIT RANK':
-                return 'Circuit rank = {}'.format(algorithm.CircuitRank(undirected_edges, directed_edges))
+                return 'Circuit rank = {}'.format(algorithm.circuit_rank(dict(), set(), undirected_edges, directed_edges))
             elif value == 'Degree of vertices':
-                return 'Degree of vertices :\n' + '\n'.join('{} : {}'.format(k, str(v)) for k, v in algorithm.Degree(undirected_edges, directed_edges).items())
+                return 'Degree of vertices :\n' + '\n'.join('{} : {}'.format(k, str(v)) for k, v in algorithm.degree(undirected_edges, directed_edges).items())
             elif value == 'DFS':
                 if data is None:
-                    return 'Оберіть вершину для початку обходу'
-                return 'Обхід в глибину : \n' + '\n'.join(algorithm.DFS(data['label'], undirected_edges, directed_edges))
+                    return 'Choose start vertex'
+                return 'Depth-first search : \n' + '\n'.join(algorithm.depth_first_search(dict(), set(), data['label'], undirected_edges, directed_edges))
             elif value == 'BFS':
                 if data is None:
                     return 'Оберіть вершину для початку обходу'
