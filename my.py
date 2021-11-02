@@ -216,7 +216,7 @@ def update_message(n_clicks, value, data, undirected_edges, directed_edges):
             elif value == 'BFS':
                 if data is None:
                     return 'Choose start vertex'
-                return 'Breadth-first search : \n' + '\n'.join(algorithm.BFS(data['label'], undirected_edges, directed_edges))
+                return 'Breadth-first search : \n' + '\n'.join(algorithm.breadth_first_search(dict(), set(), data['label'], undirected_edges, directed_edges))
             elif value == 'Cupoint':
                 return 'Cupoints :\n' + '\n'.join('{}'.format(i) for i in algorithm.ArticulationPoint(undirected_edges, directed_edges))
             elif value == 'Bridge':

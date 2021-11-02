@@ -1,4 +1,5 @@
 import copy
+import queue
 
 isNumbers = False
 
@@ -106,7 +107,7 @@ def dfs(graph: dict, used: set, search_answer: list, v):
         if i not in used:
             dfs(graph, used, search_answer, i)
 
-# initialize and set start vertex
+# initialize and set start vertex for dfs
 def depth_first_search(graph: dict, used: set, start_vertex: str, undirected_edges: str, directed_edges: str) -> list:
     initialization(graph, used, undirected_edges, directed_edges)
     # list that save order of traversing the graph
@@ -124,27 +125,26 @@ def depth_first_search(graph: dict, used: set, start_vertex: str, undirected_edg
     return search_answer
 
 
-def BFS(start_vertex, undirected_edges, directed_edges):
-    global graph, used, SearchAnswer
-    initialization(undirected_edges, directed_edges)
-
+def breadth_first_search(graph: dict, used: set, start_vertex: str, undirected_edges: str, directed_edges: str) -> list:
+    initialization(graph, used, undirected_edges, directed_edges)
     global isNumbers
+    # if all vertices is numbers then start vertex must be number
     if isNumbers == True:
         start_vertex = int(start_vertex)
 
-    SearchAnswer, q = [], [start_vertex]
+    search_answer, q = [], queue.Queue()
+    q.put(start_vertex)
     used.add(start_vertex)
-
-    while len(q) > 0:
-        v = q[0]
-        SearchAnswer.append(str(v))
-        q.pop(0)
-        for i in graph[v]:
+    while q.qsize() > 0:
+        v = q.get()
+        # convert to string for join output
+        search_answer.append(str(v))
+        for i in graph.get(v, []):
             if i not in used:
-                q.append(i)
+                q.put(i)
                 used.add(i)
 
-    return SearchAnswer
+    return search_answer
 
 
 def dfs_Point_Bridge(v):
