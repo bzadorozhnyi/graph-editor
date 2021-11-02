@@ -87,9 +87,9 @@ app.layout = html.Div([
                         {'label': 'Degree of vertices',
                             'value': 'Degree of vertices'},
                         {'label': 'Depth-first search', 'value': 'DFS'},
-                        {'label': 'Обхід в ширину', 'value': 'BFS'},
-                        {'label': 'Точки зчеплення', 'value': 'Articulation Point'},
-                        {'label': 'Мости', 'value': 'Bridge'}
+                        {'label': 'Breadth-first search', 'value': 'BFS'},
+                        {'label': 'Cupoints', 'value': 'Cupoint'},
+                        {'label': 'Bridges', 'value': 'Bridge'}
                     ],
                     value=''
                 ),
@@ -215,16 +215,16 @@ def update_message(n_clicks, value, data, undirected_edges, directed_edges):
                 return 'Depth-first search : \n' + '\n'.join(algorithm.depth_first_search(dict(), set(), data['label'], undirected_edges, directed_edges))
             elif value == 'BFS':
                 if data is None:
-                    return 'Оберіть вершину для початку обходу'
-                return 'Обхід в ширину : \n' + '\n'.join(algorithm.BFS(data['label'], undirected_edges, directed_edges))
-            elif value == 'Articulation Point':
-                return 'Точки зчеплення :\n' + '\n'.join('{}'.format(i) for i in algorithm.ArticulationPoint(undirected_edges, directed_edges))
+                    return 'Choose start vertex'
+                return 'Breadth-first search : \n' + '\n'.join(algorithm.BFS(data['label'], undirected_edges, directed_edges))
+            elif value == 'Cupoint':
+                return 'Cupoints :\n' + '\n'.join('{}'.format(i) for i in algorithm.ArticulationPoint(undirected_edges, directed_edges))
             elif value == 'Bridge':
-                return 'Мости :\n' + '\n'.join('{}'.format(i) for i in algorithm.Bridges(undirected_edges, directed_edges))
+                return 'Bridges :\n' + '\n'.join('{}'.format(i) for i in algorithm.Bridges(undirected_edges, directed_edges))
             else:
-                return 'Команда не була обрана'
+                return 'Command hasn\'t chosen'
         except BaseException:
-            return 'Виникла помилка, радимо обробити запит вручну'
+            return 'Oops, something went wrong.'
 
 # --------------------------------------------
 
