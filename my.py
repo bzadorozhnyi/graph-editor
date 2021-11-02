@@ -218,9 +218,9 @@ def update_message(n_clicks, value, data, undirected_edges, directed_edges):
                     return 'Choose start vertex'
                 return 'Breadth-first search : \n' + '\n'.join(algorithm.breadth_first_search(dict(), set(), data['label'], undirected_edges, directed_edges))
             elif value == 'Cupoint':
-                return 'Cupoints :\n' + '\n'.join('{}'.format(i) for i in algorithm.ArticulationPoint(undirected_edges, directed_edges))
+                return 'Cupoints :\n' + '\n'.join('{}'.format(i) for i in algorithm.cutpoints(dict(), set(), undirected_edges, directed_edges))
             elif value == 'Bridge':
-                return 'Bridges :\n' + '\n'.join('{}'.format(i) for i in algorithm.Bridges(undirected_edges, directed_edges))
+                return 'Bridges :\n' + '\n'.join('{}'.format(i) for i in algorithm.bridges(dict(), set(), undirected_edges, directed_edges))
             else:
                 return 'Command hasn\'t chosen'
         except BaseException:

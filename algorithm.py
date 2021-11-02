@@ -43,23 +43,22 @@ def initialization(graph: dict, used: set, undirected_edges: str, directed_edges
     for i in graph.keys():
         graph[i].sort()
 
-
-# check all unvisited vertices
-def dfs_component(graph: dict, used:set, v):
-    used.add(v)
-    for i in graph.get(v, []):
-        if i not in used:
-            dfs_component(graph, used, i)
-
 # find number of components in graph
 def component(graph: dict, used: set, undirected_edges: str, directed_edges: str) -> int:
     initialization(graph, used, undirected_edges, directed_edges)
-    answer = 0
+    
+    # check all unvisited vertices
+    def dfs_component(v):
+        used.add(v)
+        for i in graph.get(v, []):
+            if i not in used:
+                dfs_component(i)
 
+    answer = 0
     for i in graph.keys():
         if i not in used:
             answer += 1
-            dfs_component(graph, used, i)
+            dfs_component(i)
 
     return answer
 
@@ -99,17 +98,18 @@ def degree(undirected_edges: str, directed_edges: str) -> dict:
     return dict(sorted(answer.items()))
 
 
-# dfs recursion
-def dfs(graph: dict, used: set, search_answer: list, v):
-    used.add(v)
-    search_answer.append(v)
-    for i in graph.get(v, []):
-        if i not in used:
-            dfs(graph, used, search_answer, i)
-
 # initialize and set start vertex for dfs
 def depth_first_search(graph: dict, used: set, start_vertex: str, undirected_edges: str, directed_edges: str) -> list:
     initialization(graph, used, undirected_edges, directed_edges)
+    
+    # dfs recursion
+    def dfs(v):
+        used.add(v)
+        search_answer.append(v)
+        for i in graph.get(v, []):
+            if i not in used:
+                dfs(i)
+
     # list that save order of traversing the graph
     search_answer = []
     global isNumbers
@@ -117,7 +117,7 @@ def depth_first_search(graph: dict, used: set, start_vertex: str, undirected_edg
     if isNumbers == True:
         start_vertex = int(start_vertex)
 
-    dfs(graph, used, search_answer, start_vertex)
+    dfs(start_vertex)
     # convert to strings for join output
     if isNumbers == True:
         search_answer = [str(i) for i in search_answer]
@@ -147,62 +147,93 @@ def breadth_first_search(graph: dict, used: set, start_vertex: str, undirected_e
     return search_answer
 
 
-def dfs_Point_Bridge(v):
-    global used, GTemp
-    used.add(v)
-    for j in GTemp[v]:
-        if j not in used:
-            dfs_Point_Bridge(j)
+# def dfs_Point_Bridge(v):
+#     global used, GTemp
+#     used.add(v)
+#     for j in GTemp[v]:
+#         if j not in used:
+#             dfs_Point_Bridge(j)
 
-def ArticulationPoint(undirected_edges, directed_edges):
-    global graph, used, GTemp
-    CNT_Components = component(undirected_edges, directed_edges)
+# def ArticulationPoint(undirected_edges, directed_edges):
+#     global graph, used, GTemp
+#     CNT_Components = component(undirected_edges, directed_edges)
     
-    answer = set()
+#     answer = set()
+#     for i in graph.keys():
+#         GTemp = copy.deepcopy(graph)
+#         used = set()
+#         GTemp[i] = []
+#         T = 0
+#         for j in GTemp.keys():
+#             if j not in used and i != j:
+#                 dfs_Point_Bridge(j)
+#                 T += 1
+
+#         if CNT_Components < T:
+#             answer.add(i)
+    
+#     global isNumbers
+#     if isNumbers:
+#         return sorted(answer, key=lambda x: int(x))
+#     return sorted(answer)
+
+
+# auxiliary class for bridges and cutpoints search
+class node():
+    def __init__(self, time_in: int, up: int):
+        self.time_in = time_in # time that reach vertex
+        self.up = up # auxiliary variable on the basics of which we will find the answer
+
+def cutpoints(graph: dict, used: set, undirected_edges: str, directed_edges: str) -> list:
+    initialization(graph, used, undirected_edges, directed_edges)
+    def dfs_cutpoints(v, ancestor: int, time_counter: int):
+        used.add(v)
+        dp[v] = dp.get(v, node(time_counter, time_counter))
+        children = 0
+        for to in graph.get(v, []):
+            if to == ancestor:
+                continue
+            if to in used:
+                dp[v].up = min(dp[v].up, dp[to].time_in)
+            else:
+                dfs_cutpoints(to, v, time_counter + 1)
+                dp[v].up = min(dp[v].up, dp[to].up)
+                if dp[to].up >= dp[v].time_in and ancestor != -1:
+                    search_answer.append(v)
+                children += 1
+        if ancestor == -1 and children > 1:
+            search_answer.append(v)
+
+    dp, search_answer = dict(), []
+    # go through all components
     for i in graph.keys():
-        GTemp = copy.deepcopy(graph)
-        used = set()
-        GTemp[i] = []
-        T = 0
-        for j in GTemp.keys():
-            if j not in used and i != j:
-                dfs_Point_Bridge(j)
-                T += 1
-
-        if CNT_Components < T:
-            answer.add(i)
+        if i not in used:
+            dfs_cutpoints(i, -1, 0)
     
-    global isNumbers
-    if isNumbers:
-        return sorted(answer, key=lambda x: int(x))
-    return sorted(answer)
+    if isNumber:
+        return sorted(search_answer, key=lambda x: int(x))
+    return sorted(search_answer)
 
-def Bridges(undirected_edges, directed_edges):
-    global graph, used, GTemp, isNumbers
-    CNT_Components = component(undirected_edges, directed_edges)
+def bridges(graph: dict, used: set, undirected_edges: str, directed_edges: str) -> list:
+    def dfs_bridges(v, ancestor: int, time_counter: int):
+        used.add(v)
+        dp[v] = dp.get(v, node(time_counter, time_counter))
+        for to in graph.get(v, []):
+            if to == ancestor:
+                continue
+            if to in used:
+                dp[v].up = min(dp[v].up, dp[to].time_in)
+            else:
+                dfs_bridges(to, v, time_counter + 1)
+                dp[v].up = min(dp[v].up, dp[to].up)
+                if dp[to].up > dp[v].time_in:
+                    search_answer.append((v, to))
 
-    all_edges = str(undirected_edges) + '\n' + str(directed_edges)
-    answer = set()
+    initialization(graph, used, undirected_edges, directed_edges)
+    dp, search_answer = dict(), []
+    # go through all components
+    for i in graph.keys():
+        if i not in used:
+            dfs_bridges(i, -1, 0)
 
-    if len(all_edges) > 0:
-        for line in all_edges.split('\n'):
-            tline = line.split()
-            if isNumbers:
-                tline = list(map(int, tline))
-            
-            GTemp = copy.deepcopy(graph)
-            used = set()
-            if len(tline) > 1:
-                GTemp[tline[0]].remove(tline[1])
-                GTemp[tline[1]].remove(tline[0])
-
-            T = 0
-            for j in GTemp.keys():
-                if j not in used:
-                    dfs_Point_Bridge(j)
-                    T += 1
-
-            if CNT_Components < T:
-                answer.add(line)
-            
-    return answer
+    return search_answer
