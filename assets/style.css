@@ -1,36 +1,33 @@
-.graph_and_command {
+body {
+    background-color: #0E1012;
+}
+
+.graph-command {
     display: flex;
     justify-content: space-between;
-    /* width: 1000px;
-    height: 600px; */
-    /*border: solid;*/
 }
 
-.part_network {
+.part-network {
     width: 600px;
     height: 100%;
-    float: left;
+    margin: 20px;
 }
 
-.Command_Info {
+.command-info {
     width: 300px;
     height: 300px;
     margin: 20px;
-    /*border: solid;*/
 }
 
-.CommandSelector {
+.command-selector {
     float: top;
     background-color: rgba(173, 171, 171, 0.377);
     border-radius: 5px;
-    /*border: solid;*/
     height: 100px;
     position: relative;
 }
 
-.InfoOutput {
-    /*border: solid;
-    border-color: red;*/
+.info-output {
     background-color: #f0f7fba2;
     background-position: 9px 0px;
     background-repeat: no-repeat;
@@ -43,7 +40,7 @@
     white-space: 'pre-wrap';
 }
 
-.Submit_button {
+.submit-button {
     background-color: #8e9c98;
 	border-radius: 32px;
 	display: inline-block;
@@ -59,56 +56,47 @@
     bottom: 5px;
 }
 
-.custom-tabs {
-    border-top-left-radius: 3px;
-    background-color: #f9f9f9;
-    padding: 0px 24px;
-    border-bottom: 1px solid #d6d6d6;
-}
-
 .custom-tab {
-    color:#586069;
+    background-color: #696b6e!important;
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
     border-top: 3px solid transparent !important;
     border-left: 0px !important;
     border-right: 0px !important;
     border-bottom: 0px !important;
-    background-color: #fafbfc;
-    padding: 12px !important;
+    color: #c0c9c6;
+    display: flex !important;
     font-family: "system-ui";
     font-weight: 700;
-    display: flex !important;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    padding: 12px !important;
 }
+
 .custom-tab--selected {
-    color: black;
     box-shadow: 1px 1px 0px white;
-    border-left: 1px solid lightgrey !important;
-    border-right: 1px solid lightgrey !important;
-    border-top: 5px solid #3c3d3b !important;
+    border-left: 1px solid #595c5f !important;
+    border-right: 1px solid #595c5f !important;
+    border-top: 5px solid #0f8505  !important;
+    color: #ffffff!important;
 }
 
 #cytoscape-elements-callbacks {
-    border: solid;
-    border-radius: 25px;
+    background-color: #202224;
+    position: absolute;
     height: 600px;
     width: 100%;
 }
 
-.tab {
-    height: 100px;
-    box-shadow: 0 0 5px #939393;
-}
-
 .textarea {
-    width: 100%;
-    height: 500px;
+    background-color: #202224;
     box-sizing: border-box;
+    color: white;
     resize: none;
+    height: 500px;
+    width: 100%;
 }
 
-.two-columns {
+.user-input {
     margin: 20px;
 }

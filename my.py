@@ -11,8 +11,8 @@ server = app.server
 # ----------------- App layout -----------------
 
 app.layout = html.Div([
-    html.Div(className='graph_and_command', children=[
-        html.Div(className='part_network', children=[
+    html.Div(className='graph-command', children=[
+        html.Div(className='part-network', children=[
             cyto.Cytoscape(
                 id='cytoscape-elements-callbacks',
                 elements=[],
@@ -21,9 +21,7 @@ app.layout = html.Div([
                     {
                         'selector': 'node',
                         'style': {
-                            'background-color': 'white',
-                            'border-color': 'black',
-                            'border-width': '2px',
+                            'background-color': 'grey',
                             'color': 'black',
                             'font-family': ['sans-serif'],
                             'font-size': 16,
@@ -56,7 +54,7 @@ app.layout = html.Div([
                             'font-size': 16,
                             'font-weight': 700,
                             'label': 'data(weight)',
-                            'line-color': 'black',
+                            'line-color': 'grey',
                             'text-rotation': 'autorotate',
                             'text-margin-y': '20px'
                         }
@@ -64,9 +62,9 @@ app.layout = html.Div([
                     {
                         'selector': '.directed-edges',
                         'style': {
-                            'mid-target-arrow-color': 'black',
+                            'mid-target-arrow-color': 'grey',
                             'mid-target-arrow-shape': 'triangle',
-                            'line-color': 'black'
+                            'line-color': 'grey'
                         }
                     }
                 ],
@@ -75,8 +73,8 @@ app.layout = html.Div([
                 }
             )
         ]),
-        html.Div(className='Command_Info', children=[
-            html.Div(className='CommandSelector', children=[
+        html.Div(className='command-info', children=[
+            html.Div(className='command-selector', children=[
                 dcc.Dropdown(
                     id='command_dropdown',
                     options=[
@@ -93,14 +91,14 @@ app.layout = html.Div([
                     ],
                     value=''
                 ),
-                html.Button('Submit', className='Submit_button',
-                            id='submit_button', n_clicks=0),
+                html.Button('Submit', className='submit-button',
+                            id='submit-button', n_clicks=0),
             ]),
-            html.Div(className='InfoOutput', id='dd-output-container', children=[
+            html.Div(className='info-output', id='dd-output-container', children=[
                 html.Pre(id='output-container')
             ])
         ]),
-        html.Div(className='two-columns', children=[
+        html.Div(className='user-input', children=[
             dcc.Tabs(id='tabs', children=[
                 dcc.Tab(label='Undirecred edges', className='custom-tab', selected_className='custom-tab--selected', children=[
                     html.Div(className='tab', children=[
@@ -193,7 +191,7 @@ def update_graph(textarea_undirected_edges, textarea_directed_edges):
 
 @app.callback(
     Output('output-container', 'children'),
-    Input('submit_button', 'n_clicks'),
+    Input('submit-button', 'n_clicks'),
     Input('command_dropdown', 'value'),
     Input('cytoscape-elements-callbacks', 'tapNodeData'),
     State('textarea_undirected_edges', 'value'),
