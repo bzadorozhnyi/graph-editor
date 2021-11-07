@@ -13,18 +13,13 @@ body {
     margin: 20px;
 }
 
-.command-info {
-    width: 300px;
-    height: 300px;
-    margin: 20px;
+#command-dropdown {
+    margin-bottom: 10px;
 }
 
-.command-selector {
-    float: top;
-    background-color: rgba(173, 171, 171, 0.377);
-    border-radius: 5px;
-    height: 100px;
-    position: relative;
+.command-info {
+    width: 300px;
+    margin: 20px;
 }
 
 .info-output {
@@ -38,22 +33,6 @@ body {
     position: relative;
     top: 10px;
     white-space: 'pre-wrap';
-}
-
-.submit-button {
-    background-color: #8e9c98;
-	border-radius: 32px;
-	display: inline-block;
-	cursor: pointer;
-	color: #000000;
-	font-family: "system-ui";
-	font-size: 18px;
-	font-weight: bold;
-	padding: 8px 13px;
-	text-decoration: none;
-    position: absolute;
-    right: 5px;
-    bottom: 5px;
 }
 
 .custom-tab {
@@ -88,9 +67,15 @@ body {
     width: 100%;
 }
 
+.submit-button {
+    background-color: rgb(115, 152, 182);
+    border-radius: 3px;
+    width: 100%;
+}
+
 .textarea {
     background-color: #202224;
-    box-sizing: border-box;
+    /* box-sizing: border-box; */
     color: white;
     resize: none;
     height: 500px;

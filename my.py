@@ -2,8 +2,8 @@ import algorithm
 import dash
 from dash.dependencies import Input, Output, State
 import dash_cytoscape as cyto
-import dash_html_components as html
-import dash_core_components as dcc
+from dash import html
+from dash import dcc
 
 app = dash.Dash(__name__)
 server = app.server
@@ -76,7 +76,7 @@ app.layout = html.Div([
         html.Div(className='command-info', children=[
             html.Div(className='command-selector', children=[
                 dcc.Dropdown(
-                    id='command_dropdown',
+                    id='command-dropdown',
                     options=[
                         {'label': 'Number of components in graph',
                             'value': 'components'},
@@ -192,7 +192,7 @@ def update_graph(textarea_undirected_edges, textarea_directed_edges):
 @app.callback(
     Output('output-container', 'children'),
     Input('submit-button', 'n_clicks'),
-    Input('command_dropdown', 'value'),
+    Input('command-dropdown', 'value'),
     Input('cytoscape-elements-callbacks', 'tapNodeData'),
     State('textarea_undirected_edges', 'value'),
     State('textarea_directed_edges', 'value')
