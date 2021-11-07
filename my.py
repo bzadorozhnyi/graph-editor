@@ -76,6 +76,7 @@ app.layout = html.Div([
         html.Div(className='command-info', children=[
             html.Div(className='command-selector', children=[
                 dcc.Dropdown(
+                    clearable=False,
                     id='command-dropdown',
                     options=[
                         {'label': 'Number of components in graph',

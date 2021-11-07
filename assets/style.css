@@ -14,6 +14,7 @@ body {
 }
 
 #command-dropdown {
+    color: white !important;
     margin-bottom: 10px;
 }
 
@@ -23,15 +24,13 @@ body {
 }
 
 .info-output {
-    background-color: #f0f7fba2;
-    background-position: 9px 0px;
-    background-repeat: no-repeat;
-    border-left: solid 4px #8b9297;
+    background-color: #202224;
+    border-left: solid 4px #0f8505;
+    color: white;
     line-height: 18px;
     overflow: hidden;
     padding: 15px 30px;
-    position: relative;
-    top: 10px;
+    margin-top: 10px;
     white-space: 'pre-wrap';
 }
 
@@ -56,7 +55,7 @@ body {
     box-shadow: 1px 1px 0px white;
     border-left: 1px solid #595c5f !important;
     border-right: 1px solid #595c5f !important;
-    border-top: 5px solid #0f8505  !important;
+    border-top: 5px solid #0f8505 !important;
     color: #ffffff!important;
 }
 
@@ -68,14 +67,21 @@ body {
 }
 
 .submit-button {
-    background-color: rgb(115, 152, 182);
+    background-color: #0f8505;
+    border: none;
     border-radius: 3px;
+    font-size: medium;
+    font-weight: 700;
+    height: 40px;
     width: 100%;
+}
+
+.submit-button:hover {
+    background-color: #0c5f04;
 }
 
 .textarea {
     background-color: #202224;
-    /* box-sizing: border-box; */
     color: white;
     resize: none;
     height: 500px;
@@ -85,3 +91,26 @@ body {
 .user-input {
     margin: 20px;
 }
+
+/*----------------------------Dropdown----------------------------*/
+
+.Select-control {
+    background-color: #202224 !important;
+    color: white !important;
+}
+
+.Select {
+    background-color: #202224 !important;
+    color: white !important;
+}
+
+.Select-menu-outer {
+    background-color: #202224 !important;
+    color: white !important;
+}
+
+.Select-value-label {
+    color: white !important;
+}
+
+/*----------------------------------------------------------------*/
