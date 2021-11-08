@@ -52,7 +52,6 @@ body {
 }
 
 .custom-tab--selected {
-    box-shadow: 1px 1px 0px white;
     border-left: 1px solid #595c5f !important;
     border-right: 1px solid #595c5f !important;
     border-top: 5px solid #0f8505 !important;
@@ -85,7 +84,7 @@ body {
     color: white;
     resize: none;
     height: 500px;
-    width: 100%;
+    width: calc(100% - 6px);
 }
 
 .user-input {
@@ -94,20 +93,38 @@ body {
 
 /*----------------------------Dropdown----------------------------*/
 
+/* Set dropdown background and font color */
 .Select-control {
     background-color: #202224 !important;
     color: white !important;
+    font-family: "system-ui";
 }
 
-.Select {
-    background-color: #202224 !important;
-    color: white !important;
+/* Remove scrolling */
+div .ReactVirtualized__Grid.ReactVirtualized__List.VirtualSelectGrid {
+    height: auto !important;
+    min-height: none !important;
 }
 
+/* Border resizing and select list styling */
 .Select-menu-outer {
     background-color: #202224 !important;
     color: white !important;
+    height: auto !important;
+    max-height: 400px !important;
 }
+
+/* Visible of all elements in dropdown */
+.Select-menu {
+    font-family: "system-ui";
+    height: auto;
+    max-height: none !important;
+}
+
+/* Remove scrollbar
+.Select-menu-outer .Select-menu div div {
+    overflow: hidden !important;
+} */
 
 .Select-value-label {
     color: white !important;
