@@ -66,9 +66,10 @@ body {
 }
 
 .submit-button {
-    background-color: #0f8505;
-    border: none;
+    background-color: #202224;
+    border: 3px solid #0f8505 !important;
     border-radius: 3px;
+    color: #0f8505;
     font-size: medium;
     font-weight: 700;
     height: 40px;
@@ -76,7 +77,8 @@ body {
 }
 
 .submit-button:hover {
-    background-color: #0c5f04;
+    background-color: #0f8505 !important;
+    color: #202224;
 }
 
 .textarea {

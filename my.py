@@ -11,6 +11,20 @@ server = app.server
 # ----------------- App layout -----------------
 
 app.layout = html.Div([
+    html.Div(
+        dcc.Dropdown(
+            clearable=False,
+            id='styling-nodes',
+            options=[
+                {'label': 'Circle', 'value': 'circle'},
+                {'label': 'Triangle', 'value': 'triangle'},
+                {'label': 'Rectangle', 'value': 'rectangle'},
+                {'label': 'Pentagon', 'value': 'pentagon'},
+                {'label': 'Hexagon', 'value': 'hexagon'}
+            ],
+            value='circle'
+        )
+    ),
     html.Div(className='graph-command', children=[
         html.Div(className='part-network', children=[
             cyto.Cytoscape(
@@ -27,9 +41,44 @@ app.layout = html.Div([
                             'font-size': 16,
                             'font-weight': 700,
                             'label': 'data(label)',
+                            'text-halign': 'center',
+                            # 'height': 50,
+                            # 'width': 50
+                        }
+                    },
+                    {
+                        'selector': '.circle',
+                        'style': {
                             'shape': 'circle',
-                            'text-halign':'center',
-                            'text-valign':'center'
+                            'text-margin-y': '25px'
+                        }
+                    },
+                    {
+                        'selector': '.triangle',
+                        'style': {
+                            'shape': 'triangle',
+                            'text-margin-y': '30px'
+                        }
+                    },
+                    {
+                        'selector': '.rectangle',
+                        'style': {
+                            'shape': 'rectangle',
+                            'text-margin-y': '25px'
+                        }
+                    },
+                    {
+                        'selector': '.pentagon',
+                        'style': {
+                            'shape': 'pentagon',
+                            'text-margin-y': '25px'
+                        }
+                    },
+                    {
+                        'selector': '.hexagon',
+                        'style': {
+                            'shape': 'hexagon',
+                            'text-margin-y': '25px'
                         }
                     },
                     {
@@ -41,9 +90,6 @@ app.layout = html.Div([
                             'font-size': 16,
                             'font-weight': 700,
                             'label': 'data(label)',
-                            'shape': 'circle',
-                            'text-halign': 'center',
-                            'text-valign': 'center'
                         }
                     },
                     {
@@ -73,7 +119,7 @@ app.layout = html.Div([
                 }
             )
         ]),
-        html.Div(className='command-info', children=[
+        html.Div(className='command-info', children=[   
             html.Div(className='command-selector', children=[
                 dcc.Dropdown(
                     clearable=False,
@@ -133,9 +179,10 @@ app.layout = html.Div([
 @app.callback(
     Output('cytoscape-elements-callbacks', 'elements'),
     Input('textarea_undirected_edges', 'value'),
-    Input('textarea_directed_edges', 'value')
+    Input('textarea_directed_edges', 'value'),
+    Input('styling-nodes', 'value')
 )
-def update_graph(textarea_undirected_edges, textarea_directed_edges):
+def update_graph(textarea_undirected_edges, textarea_directed_edges, shape):
     nodes, edges = [], []
     all_nodes = set()
 
@@ -150,7 +197,8 @@ def update_graph(textarea_undirected_edges, textarea_directed_edges):
                 nodes.append(
                     {
                         'data': {'id': 'n' + tline[j], 'label': tline[j]},
-                        'position': {'x': x, 'y': y}
+                        'position': {'x': x, 'y': y},
+                        'classes': shape
                     }
                 )
                 all_nodes.add(tline[j])
