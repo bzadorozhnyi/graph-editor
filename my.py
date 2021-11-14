@@ -11,20 +11,34 @@ server = app.server
 # ----------------- App layout -----------------
 
 app.layout = html.Div([
-    html.Div(
+    html.Div(children=[
         dcc.Dropdown(
             clearable=False,
             id='styling-nodes',
             options=[
                 {'label': 'Circle', 'value': 'circle'},
-                {'label': 'Triangle', 'value': 'triangle'},
                 {'label': 'Rectangle', 'value': 'rectangle'},
                 {'label': 'Pentagon', 'value': 'pentagon'},
                 {'label': 'Hexagon', 'value': 'hexagon'}
             ],
             value='circle'
+        ),
+        dcc.Slider(
+            id='node-size',
+            min=50,
+            max=100,
+            step=None,
+            marks={
+                50: '50',
+                60: '60',
+                70: '70',
+                80: '80',
+                90: '90',
+                100: '100'
+            },
+            value=50
         )
-    ),
+    ]),
     html.Div(className='graph-command', children=[
         html.Div(className='part-network', children=[
             cyto.Cytoscape(
@@ -42,43 +56,78 @@ app.layout = html.Div([
                             'font-weight': 700,
                             'label': 'data(label)',
                             'text-halign': 'center',
-                            # 'height': 50,
-                            # 'width': 50
+                        }
+                    },
+                    {
+                        'selector': '.size_50',
+                        'style': {
+                            'width': '50px',
+                            'height': '50px',
+                            'text-margin-y': '35px'
+                        }
+                    },
+                    {
+                        'selector': '.size_60',
+                        'style': {
+                            'width': '60px',
+                            'height': '60px',
+                            'text-margin-y': '40px'
+                        }
+                    },
+                    {
+                        'selector': '.size_70',
+                        'style': {
+                            'width': '70px',
+                            'height': '70px',
+                            'text-margin-y': '45px'
+                        }
+                    },
+                    {
+                        'selector': '.size_80',
+                        'style': {
+                            'width': '80px',
+                            'height': '80px',
+                            'text-margin-y': '50px'
+                        }
+                    },
+                    {
+                        'selector': '.size_90',
+                        'style': {
+                            'width': '90px',
+                            'height': '90px',
+                            'text-margin-y': '55px'
+                        }
+                    },
+                    {
+                        'selector': '.size_100',
+                        'style': {
+                            'width': '100px',
+                            'height': '100px',
+                            'text-margin-y': '60px'
                         }
                     },
                     {
                         'selector': '.circle',
                         'style': {
                             'shape': 'circle',
-                            'text-margin-y': '25px'
-                        }
-                    },
-                    {
-                        'selector': '.triangle',
-                        'style': {
-                            'shape': 'triangle',
-                            'text-margin-y': '30px'
                         }
                     },
                     {
                         'selector': '.rectangle',
                         'style': {
                             'shape': 'rectangle',
-                            'text-margin-y': '25px'
                         }
                     },
                     {
                         'selector': '.pentagon',
                         'style': {
                             'shape': 'pentagon',
-                            'text-margin-y': '25px'
                         }
                     },
                     {
                         'selector': '.hexagon',
                         'style': {
                             'shape': 'hexagon',
-                            'text-margin-y': '25px'
                         }
                     },
                     {
@@ -180,9 +229,10 @@ app.layout = html.Div([
     Output('cytoscape-elements-callbacks', 'elements'),
     Input('textarea_undirected_edges', 'value'),
     Input('textarea_directed_edges', 'value'),
-    Input('styling-nodes', 'value')
+    Input('styling-nodes', 'value'),
+    Input('node-size', 'value')
 )
-def update_graph(textarea_undirected_edges, textarea_directed_edges, shape):
+def update_graph(textarea_undirected_edges, textarea_directed_edges, shape, node_size):
     nodes, edges = [], []
     all_nodes = set()
 
@@ -198,7 +248,7 @@ def update_graph(textarea_undirected_edges, textarea_directed_edges, shape):
                     {
                         'data': {'id': 'n' + tline[j], 'label': tline[j]},
                         'position': {'x': x, 'y': y},
-                        'classes': shape
+                        'classes': shape + ' size_' + str(node_size)
                     }
                 )
                 all_nodes.add(tline[j])
