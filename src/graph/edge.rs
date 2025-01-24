@@ -2,6 +2,7 @@
 pub struct Edge {
     pub start_index: usize,
     pub end_index: usize,
+    pub oriented: bool
 }
 
 impl Edge {
@@ -9,6 +10,7 @@ impl Edge {
         Self {
             start_index,
             end_index,
+            oriented: true
         }
     }
 }

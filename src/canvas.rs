@@ -1,6 +1,9 @@
-use eframe::egui::{Color32, Painter, Response, Sense, Stroke, Ui};
+use eframe::{
+    egui::{Color32, Painter, Pos2, Response, Sense, Stroke, Ui},
+    emath::Rot2,
+};
 
-use crate::graph::{Edge, Graph};
+use crate::graph::{Edge, Graph, Node};
 
 pub struct Canvas {
     response: Option<Response>,
@@ -120,17 +123,42 @@ impl Canvas {
         }
     }
 
-    pub fn draw_edges(&mut self, graph: &Graph) {
-        for edge in graph.edges() {
-            let (start, end) = (
-                &graph.nodes()[edge.start_index],
-                &graph.nodes()[edge.end_index],
-            );
+    fn calculate_border_intersection(node1: &Node, node2: &Node) -> (Pos2, Pos2) {
+        let direction = (node2.position - node1.position).normalized();
+
+        let start = node1.position + direction * node1.radius;
+        let end = node2.position - direction * node2.radius;
+
+        (start, end)
+    }
+
+    fn draw_edge(&self, graph: &Graph, edge: &Edge) {
+        let (start, end) = Self::calculate_border_intersection(
+            &graph.nodes()[edge.start_index],
+            &graph.nodes()[edge.end_index],
+        );
+
+        self.painter()
+            .line_segment([start, end], Stroke::new(2.0, Color32::BLACK));
+
+        if edge.oriented {
+            let rotation = Rot2::from_angle(std::f32::consts::TAU / 10.0);
+            let direction = (end - start).normalized();
 
             self.painter().line_segment(
-                [start.position, end.position],
+                [end, end - 10.0 * (rotation * direction)],
                 Stroke::new(2.0, Color32::BLACK),
             );
+            self.painter().line_segment(
+                [end, end - 10.0 * (rotation.inverse() * direction)],
+                Stroke::new(2.0, Color32::BLACK),
+            );
+        }
+    }
+
+    pub fn draw_edges(&mut self, graph: &Graph) {
+        for edge in graph.edges() {
+            self.draw_edge(graph, edge);
         }
     }
 
