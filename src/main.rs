@@ -48,7 +48,7 @@ impl eframe::App for MyApp {
 
             self.canvas.setup(ui);
             self.canvas.handle_draging(&mut self.graph);
-            self.canvas.handle_node_selection(&self.graph);
+            self.canvas.handle_node_selection(&mut self.graph);
 
             let edge_created = self.canvas.handle_edge_creation(&mut self.graph);
             // if edge_created is true => we clicked on edge's end => ignore this
@@ -60,12 +60,11 @@ impl eframe::App for MyApp {
             self.canvas.draw_edges(&self.graph);
             self.canvas.draw_nodes(&self.graph);
 
-            let selected_node = self
-                .canvas
-                .selected_node()
-                .map(|index| &mut self.graph.nodes_mut()[index]);
-            self.node_editor
-                .show(ctx, &mut self.node_editor_open, selected_node);
+            self.node_editor.show(
+                ctx,
+                &mut self.node_editor_open,
+                self.graph.selected_node_mut(),
+            );
         });
     }
 }

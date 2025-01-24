@@ -8,6 +8,7 @@ pub use node::Node;
 pub struct Graph {
     nodes: Vec<Node>,
     edges: Vec<Edge>,
+    selected_node_index: Option<usize>,
 }
 
 impl Graph {
@@ -15,6 +16,7 @@ impl Graph {
         Self {
             nodes: Vec::new(),
             edges: Vec::new(),
+            selected_node_index: None,
         }
     }
 
@@ -46,5 +48,14 @@ impl Graph {
         for node in &self.nodes {
             node.draw(painter);
         }
+    }
+
+    pub fn selected_node_mut(&mut self) -> Option<&mut Node> {
+        self.selected_node_index
+            .map(|index| &mut self.nodes_mut()[index])
+    }
+
+    pub fn set_selected_node_index(&mut self, selected_node_index: Option<usize>) {
+        self.selected_node_index = selected_node_index;
     }
 }

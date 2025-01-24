@@ -9,7 +9,6 @@ pub struct Canvas {
     response: Option<Response>,
     painter: Option<Painter>,
     dragging: Option<usize>,
-    selected_node: Option<usize>,
     new_edge_start: Option<usize>,
 }
 
@@ -19,7 +18,6 @@ impl Canvas {
             response: None,
             painter: None,
             dragging: None,
-            selected_node: None,
             new_edge_start: None,
         }
     }
@@ -62,12 +60,17 @@ impl Canvas {
         }
     }
 
-    pub fn handle_node_selection(&mut self, graph: &Graph) {
+    pub fn handle_node_selection(&mut self, graph: &mut Graph) {
         if let Some(mouse_pos) = self.response().interact_pointer_pos() {
+            let mut selected_node_index = None;
             for (index, node) in graph.nodes().iter().enumerate() {
                 if node.position.distance(mouse_pos) < node.radius {
-                    self.selected_node = Some(index);
+                    selected_node_index = Some(index);
+                    break;
                 }
+            }
+            if selected_node_index.is_some() {
+                graph.set_selected_node_index(selected_node_index);
             }
         }
     }
@@ -166,9 +169,5 @@ impl Canvas {
         for node in graph.nodes() {
             node.draw(self.painter());
         }
-    }
-
-    pub fn selected_node(&self) -> Option<usize> {
-        self.selected_node
     }
 }
