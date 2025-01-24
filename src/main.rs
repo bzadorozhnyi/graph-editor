@@ -1,7 +1,8 @@
-use eframe::egui::{self, color_picker::color_edit_button_rgba, Slider};
+use eframe::egui::{self};
 use graph_editor_egui::{
     canvas::Canvas,
     graph::{Graph, Node},
+    node_editor::NodeEditor,
 };
 
 fn main() -> eframe::Result {
@@ -17,6 +18,8 @@ fn main() -> eframe::Result {
 struct MyApp {
     graph: Graph,
     canvas: Canvas,
+    node_editor: NodeEditor,
+    node_editor_open: bool,
 }
 
 impl Default for MyApp {
@@ -24,6 +27,8 @@ impl Default for MyApp {
         Self {
             graph: Graph::new(),
             canvas: Canvas::new(),
+            node_editor: NodeEditor::new(),
+            node_editor_open: false,
         }
     }
 }
@@ -31,6 +36,12 @@ impl Default for MyApp {
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &eframe::egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
+            egui::menu::bar(ui, |ui| {
+                if ui.button("Node Editor").clicked() {
+                    self.node_editor_open = !self.node_editor_open;
+                }
+            });
+
             if ui.button("New").clicked() {
                 self.graph.add_node(Node::new());
             }
@@ -49,31 +60,12 @@ impl eframe::App for MyApp {
             self.canvas.draw_edges(&self.graph);
             self.canvas.draw_nodes(&self.graph);
 
-            if let Some(selected_node) = self.canvas.selected_node() {
-                egui::Window::new("Node").collapsible(true).show(ctx, |ui| {
-                    ui.label("Node");
-                    ui.separator();
-                    ui.text_edit_singleline(&mut self.graph.nodes_mut()[selected_node].label);
-                    ui.separator();
-                    ui.add(
-                        Slider::new(
-                            &mut self.graph.nodes_mut()[selected_node].radius,
-                            10.0..=100.0,
-                        )
-                        .text("Size"),
-                    );
-                    ui.separator();
-
-                    ui.horizontal(|ui| {
-                        color_edit_button_rgba(
-                            ui,
-                            &mut self.graph.nodes_mut()[selected_node].color,
-                            egui::color_picker::Alpha::Opaque,
-                        );
-                        ui.label("Color");
-                    });
-                });
-            }
+            let selected_node = self
+                .canvas
+                .selected_node()
+                .map(|index| &mut self.graph.nodes_mut()[index]);
+            self.node_editor
+                .show(ctx, &mut self.node_editor_open, selected_node);
         });
     }
 }
