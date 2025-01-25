@@ -1,5 +1,8 @@
 use super::NodeId;
 
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct EdgeId(pub usize);
+
 #[derive(Debug)]
 pub struct Edge {
     pub start_index: NodeId,

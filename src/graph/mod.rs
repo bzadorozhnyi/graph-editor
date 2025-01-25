@@ -1,29 +1,33 @@
 pub mod edge;
 pub mod node;
 
+use std::collections::BTreeMap;
 use std::collections::HashMap;
 
 pub use edge::Edge;
+use edge::EdgeId;
 use eframe::egui::Painter;
 pub use node::Node;
 pub use node::NodeId;
 
 pub struct Graph {
     nodes: HashMap<NodeId, Node>,
-    edges: Vec<Edge>,
+    edges: BTreeMap<EdgeId, Edge>,
     selected_node_index: Option<NodeId>,
     dragging: Option<NodeId>,
     node_id_counter: usize,
+    edge_id_counter: usize,
 }
 
 impl Graph {
     pub fn new() -> Self {
         Self {
             nodes: HashMap::new(),
-            edges: Vec::new(),
+            edges: BTreeMap::new(),
             selected_node_index: None,
             dragging: None,
             node_id_counter: 0,
+            edge_id_counter: 0
         }
     }
 
@@ -35,11 +39,11 @@ impl Graph {
         &mut self.nodes
     }
 
-    pub fn edges(&self) -> &Vec<Edge> {
+    pub fn edges(&self) -> &BTreeMap<EdgeId, Edge> {
         &self.edges
     }
 
-    pub fn edges_mut(&mut self) -> &mut Vec<Edge> {
+    pub fn edges_mut(&mut self) -> &mut BTreeMap<EdgeId, Edge> {
         &mut self.edges
     }
 
@@ -51,7 +55,10 @@ impl Graph {
     }
 
     pub fn add_edge(&mut self, edge: Edge) {
-        self.edges.push(edge);
+        let edge_id = self.edge_id_counter;
+        self.edge_id_counter += 1;
+
+        self.edges.insert(EdgeId(edge_id), edge);
     }
 
     pub fn draw_nodes(&self, painter: &Painter) {
@@ -98,6 +105,6 @@ impl Graph {
 
         self.nodes_mut().remove(&index);
         self.edges_mut()
-            .retain(|e| e.start_index != index && e.end_index != index);
+            .retain(|_, e| e.start_index != index && e.end_index != index);
     }
 }

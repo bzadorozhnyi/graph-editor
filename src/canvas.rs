@@ -95,7 +95,7 @@ impl Canvas {
                 }
 
                 if let Some(edge_end) = edge_end {
-                    graph.edges_mut().push(Edge::new(edge_start, edge_end));
+                    graph.add_edge(Edge::new(edge_start, edge_end));
                     self.new_edge_start = None;
                     edge_created = true;
                 }
@@ -163,7 +163,7 @@ impl Canvas {
     }
 
     pub fn draw_edges(&mut self, graph: &Graph) {
-        for edge in graph.edges() {
+        for edge in graph.edges().values() {
             self.draw_edge(graph, edge);
         }
     }

@@ -43,16 +43,27 @@ impl EdgesTable {
                 });
             })
             .body(|body| {
+                // used to get edges in same order (after removing, adding etc.)
+                let ids: Vec<_> = graph.edges().keys().cloned().collect();
+
+                // rows is more efficient, than row
+                // https://docs.rs/egui_extras/0.30.0/egui_extras/struct.TableBody.html#method.rows
+                // that's why using ids - to keep edges order 
                 body.rows(20.0, graph.edges().len(), |mut row| {
                     let row_index = row.index();
+                    let edge_id = &ids[row_index];
+
                     row.col(|ui| {
-                        ui.checkbox(&mut graph.edges_mut()[row_index].oriented, "");
+                        ui.checkbox(
+                            &mut graph.edges_mut().get_mut(edge_id).unwrap().oriented,
+                            "",
+                        );
                     });
                     row.col(|ui| {
-                        ui.label(&graph.nodes()[&graph.edges()[row_index].start_index].label);
+                        ui.label(&graph.nodes()[&graph.edges()[&edge_id].start_index].label);
                     });
                     row.col(|ui| {
-                        ui.label(&graph.nodes()[&graph.edges()[row_index].end_index].label);
+                        ui.label(&graph.nodes()[&graph.edges()[&edge_id].end_index].label);
                     });
                 });
             });
