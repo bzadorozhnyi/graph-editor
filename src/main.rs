@@ -42,6 +42,9 @@ impl eframe::App for MyApp {
     fn update(&mut self, ctx: &eframe::egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             egui::menu::bar(ui, |ui| {
+                if ui.button("New").clicked() {
+                    self.graph.add_node(Node::new());
+                }
                 if ui.button("Node Editor").clicked() {
                     self.node_editor_open = !self.node_editor_open;
                 }
@@ -49,10 +52,6 @@ impl eframe::App for MyApp {
                     self.edges_table_open = !self.edges_table_open;
                 }
             });
-
-            if ui.button("New").clicked() {
-                self.graph.add_node(Node::new());
-            }
 
             self.canvas.setup(ui);
             self.canvas.handle_draging(&mut self.graph);
