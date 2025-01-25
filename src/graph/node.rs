@@ -1,5 +1,9 @@
 use eframe::egui::{Align2, Color32, FontFamily, FontId, Painter, Pos2, Rgba, Stroke};
 
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
+pub struct NodeId(pub usize);
+
+#[derive(Debug)]
 pub struct Node {
     pub position: Pos2,
     pub radius: f32,

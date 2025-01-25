@@ -1,6 +1,6 @@
-use eframe::egui::{self, color_picker::color_edit_button_rgba, Slider};
+use eframe::egui::{self, color_picker::color_edit_button_rgba, Button, Color32, RichText, Slider};
 
-use crate::graph::Node;
+use crate::graph::Graph;
 
 pub struct NodeEditor {}
 
@@ -13,37 +13,39 @@ impl NodeEditor {
         "Node Editor"
     }
 
-    pub fn show(
-        &mut self,
-        ctx: &eframe::egui::Context,
-        open: &mut bool,
-        selected_node: Option<&mut Node>,
-    ) {
+    pub fn show(&mut self, ctx: &eframe::egui::Context, open: &mut bool, graph: &mut Graph) {
         egui::Window::new("Node")
             .open(open)
             .collapsible(false)
             .show(ctx, |ui| {
-                self.ui(ui, selected_node);
+                self.ui(ui, graph);
             });
     }
 
-    fn ui(&mut self, ui: &mut egui::Ui, selected_node: Option<&mut Node>) {
-        ui.add_enabled_ui(selected_node.is_some(), |ui| {
-            if let Some(node) = selected_node {
-                ui.label("Node");
-                ui.separator();
-                ui.text_edit_singleline(&mut node.label);
-                ui.separator();
-                ui.add(Slider::new(&mut node.radius, 10.0..=100.0).text("Size"));
-                ui.separator();
+    fn ui(&mut self, ui: &mut egui::Ui, graph: &mut Graph) {
+        if let Some(node) = graph.selected_node_mut() {
+            ui.label("Node");
+            ui.separator();
+            ui.text_edit_singleline(&mut node.label);
+            ui.separator();
+            ui.add(Slider::new(&mut node.radius, 10.0..=100.0).text("Size"));
+            ui.separator();
 
-                ui.horizontal(|ui| {
-                    color_edit_button_rgba(ui, &mut node.color, egui::color_picker::Alpha::Opaque);
-                    ui.label("Color");
-                });
-            } else {
-                ui.label("No node selected");
+            ui.horizontal(|ui| {
+                color_edit_button_rgba(ui, &mut node.color, egui::color_picker::Alpha::Opaque);
+                ui.label("Color");
+            });
+
+            ui.separator();
+
+            if ui
+                .add(Button::new(RichText::new("Delete").color(Color32::WHITE)).fill(Color32::RED))
+                .clicked()
+            {
+                graph.remove_selected();
             }
-        });
+        } else {
+            ui.label("No node selected");
+        }
     }
 }

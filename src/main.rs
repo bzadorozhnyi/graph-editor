@@ -56,15 +56,12 @@ impl eframe::App for MyApp {
                 self.canvas.handle_setting_edge_start(&self.graph);
             }
 
+            self.node_editor
+                .show(ctx, &mut self.node_editor_open, &mut self.graph);
+
             self.canvas.draw_possible_edge(&self.graph);
             self.canvas.draw_edges(&self.graph);
             self.canvas.draw_nodes(&self.graph);
-
-            self.node_editor.show(
-                ctx,
-                &mut self.node_editor_open,
-                self.graph.selected_node_mut(),
-            );
         });
     }
 }

@@ -3,13 +3,12 @@ use eframe::{
     emath::Rot2,
 };
 
-use crate::graph::{Edge, Graph, Node};
+use crate::graph::{Edge, Graph, Node, NodeId};
 
 pub struct Canvas {
     response: Option<Response>,
     painter: Option<Painter>,
-    dragging: Option<usize>,
-    new_edge_start: Option<usize>,
+    new_edge_start: Option<NodeId>,
 }
 
 impl Canvas {
@@ -17,7 +16,6 @@ impl Canvas {
         Canvas {
             response: None,
             painter: None,
-            dragging: None,
             new_edge_start: None,
         }
     }
@@ -46,26 +44,31 @@ impl Canvas {
 
     pub fn handle_draging(&mut self, graph: &mut Graph) {
         if let Some(mouse_pos) = self.response().interact_pointer_pos() {
-            if let Some(index) = self.dragging {
-                graph.nodes_mut()[index].position = mouse_pos;
+            if let Some(index) = graph.dragging() {
+                graph.nodes_mut().get_mut(&index).unwrap().position = mouse_pos;
             } else {
-                for (index, node) in graph.nodes().iter().enumerate() {
+                let mut dragging = None;
+                for (index, node) in graph.nodes().iter() {
                     if node.position.distance(mouse_pos) < node.radius {
-                        self.dragging = Some(index);
+                        dragging = Some(*index);
                     }
+                }
+
+                if dragging.is_some() {
+                    graph.set_dragging(dragging);
                 }
             }
         } else {
-            self.dragging = None;
+            graph.set_dragging(None);
         }
     }
 
     pub fn handle_node_selection(&mut self, graph: &mut Graph) {
         if let Some(mouse_pos) = self.response().interact_pointer_pos() {
             let mut selected_node_index = None;
-            for (index, node) in graph.nodes().iter().enumerate() {
+            for (index, node) in graph.nodes() {
                 if node.position.distance(mouse_pos) < node.radius {
-                    selected_node_index = Some(index);
+                    selected_node_index = Some(*index);
                     break;
                 }
             }
@@ -84,9 +87,9 @@ impl Canvas {
         {
             if self.response().secondary_clicked() {
                 let mut edge_end = None;
-                for (index, node) in graph.nodes().iter().enumerate() {
-                    if index != edge_start && node.position.distance(mouse_pos) < node.radius {
-                        edge_end = Some(index);
+                for (index, node) in graph.nodes() {
+                    if *index != edge_start && node.position.distance(mouse_pos) < node.radius {
+                        edge_end = Some(*index);
                         break;
                     }
                 }
@@ -105,9 +108,9 @@ impl Canvas {
     pub fn handle_setting_edge_start(&mut self, graph: &Graph) {
         if self.response().secondary_clicked() {
             if let Some(mouse_pos) = self.response().interact_pointer_pos() {
-                for (index, node) in graph.nodes().iter().enumerate() {
+                for (index, node) in graph.nodes() {
                     if node.position.distance(mouse_pos) < node.radius {
-                        self.new_edge_start = Some(index);
+                        self.new_edge_start = Some(*index);
                         break;
                     }
                 }
@@ -120,7 +123,7 @@ impl Canvas {
             (self.new_edge_start, self.response().hover_pos())
         {
             self.painter().line_segment(
-                [graph.nodes()[edge_start].position, mouse_pos],
+                [graph.nodes()[&edge_start].position, mouse_pos],
                 Stroke::new(2.0, Color32::BLACK),
             );
         }
@@ -137,8 +140,8 @@ impl Canvas {
 
     fn draw_edge(&self, graph: &Graph, edge: &Edge) {
         let (start, end) = Self::calculate_border_intersection(
-            &graph.nodes()[edge.start_index],
-            &graph.nodes()[edge.end_index],
+            &graph.nodes()[&edge.start_index],
+            &graph.nodes()[&edge.end_index],
         );
 
         self.painter()
@@ -166,7 +169,7 @@ impl Canvas {
     }
 
     pub fn draw_nodes(&mut self, graph: &Graph) {
-        for node in graph.nodes() {
+        for node in graph.nodes().values() {
             node.draw(self.painter());
         }
     }
