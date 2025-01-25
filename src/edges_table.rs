@@ -60,10 +60,10 @@ impl EdgesTable {
                         );
                     });
                     row.col(|ui| {
-                        ui.label(&graph.nodes()[&graph.edges()[&edge_id].start_index].label);
+                        ui.label(&graph.nodes()[&graph.edges()[&edge_id].start_id].label);
                     });
                     row.col(|ui| {
-                        ui.label(&graph.nodes()[&graph.edges()[&edge_id].end_index].label);
+                        ui.label(&graph.nodes()[&graph.edges()[&edge_id].end_id].label);
                     });
                 });
             });

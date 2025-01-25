@@ -13,7 +13,7 @@ pub use node::NodeId;
 pub struct Graph {
     nodes: HashMap<NodeId, Node>,
     edges: BTreeMap<EdgeId, Edge>,
-    selected_node_index: Option<NodeId>,
+    selected_node_id: Option<NodeId>,
     dragging: Option<NodeId>,
     node_id_counter: usize,
     edge_id_counter: usize,
@@ -24,7 +24,7 @@ impl Graph {
         Self {
             nodes: HashMap::new(),
             edges: BTreeMap::new(),
-            selected_node_index: None,
+            selected_node_id: None,
             dragging: None,
             node_id_counter: 0,
             edge_id_counter: 0
@@ -76,35 +76,35 @@ impl Graph {
     }
 
     pub fn selected_node_mut(&mut self) -> Option<&mut Node> {
-        self.selected_node_index
-            .map(|index| self.nodes_mut().get_mut(&index).unwrap())
+        self.selected_node_id
+            .map(|id| self.nodes_mut().get_mut(&id).unwrap())
     }
 
-    pub fn set_selected_node_index(&mut self, selected_node_index: Option<NodeId>) {
-        self.selected_node_index = selected_node_index;
+    pub fn set_selected_node_id(&mut self, selected_node_id: Option<NodeId>) {
+        self.selected_node_id = selected_node_id;
     }
 
     pub fn remove_selected(&mut self) {
-        if let Some(selected_index) = self.selected_node_index {
-            self.remove_node(selected_index);
+        if let Some(selected_id) = self.selected_node_id {
+            self.remove_node(selected_id);
         }
     }
 
-    pub fn remove_node(&mut self, index: NodeId) {
-        if let Some(selected_index) = self.selected_node_index {
-            if index == selected_index {
-                self.selected_node_index = None;
+    pub fn remove_node(&mut self, id: NodeId) {
+        if let Some(selected_id) = self.selected_node_id {
+            if id == selected_id {
+                self.selected_node_id = None;
             }
         }
 
-        if let Some(dragging_index) = self.dragging {
-            if index == dragging_index {
+        if let Some(dragging_id) = self.dragging {
+            if id == dragging_id {
                 self.dragging = None;
             }
         }
 
-        self.nodes_mut().remove(&index);
+        self.nodes_mut().remove(&id);
         self.edges_mut()
-            .retain(|_, e| e.start_index != index && e.end_index != index);
+            .retain(|_, e| e.start_id != id && e.end_id != id);
     }
 }

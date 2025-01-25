@@ -44,13 +44,13 @@ impl Canvas {
 
     pub fn handle_draging(&mut self, graph: &mut Graph) {
         if let Some(mouse_pos) = self.response().interact_pointer_pos() {
-            if let Some(index) = graph.dragging() {
-                graph.nodes_mut().get_mut(&index).unwrap().position = mouse_pos;
+            if let Some(id) = graph.dragging() {
+                graph.nodes_mut().get_mut(&id).unwrap().position = mouse_pos;
             } else {
                 let mut dragging = None;
-                for (index, node) in graph.nodes().iter() {
+                for (id, node) in graph.nodes().iter() {
                     if node.position.distance(mouse_pos) < node.radius {
-                        dragging = Some(*index);
+                        dragging = Some(*id);
                     }
                 }
 
@@ -65,15 +65,15 @@ impl Canvas {
 
     pub fn handle_node_selection(&mut self, graph: &mut Graph) {
         if let Some(mouse_pos) = self.response().interact_pointer_pos() {
-            let mut selected_node_index = None;
-            for (index, node) in graph.nodes() {
+            let mut selected_node_id = None;
+            for (id, node) in graph.nodes() {
                 if node.position.distance(mouse_pos) < node.radius {
-                    selected_node_index = Some(*index);
+                    selected_node_id = Some(*id);
                     break;
                 }
             }
-            if selected_node_index.is_some() {
-                graph.set_selected_node_index(selected_node_index);
+            if selected_node_id.is_some() {
+                graph.set_selected_node_id(selected_node_id);
             }
         }
     }
@@ -87,9 +87,9 @@ impl Canvas {
         {
             if self.response().secondary_clicked() {
                 let mut edge_end = None;
-                for (index, node) in graph.nodes() {
-                    if *index != edge_start && node.position.distance(mouse_pos) < node.radius {
-                        edge_end = Some(*index);
+                for (id, node) in graph.nodes() {
+                    if *id != edge_start && node.position.distance(mouse_pos) < node.radius {
+                        edge_end = Some(*id);
                         break;
                     }
                 }
@@ -108,9 +108,9 @@ impl Canvas {
     pub fn handle_setting_edge_start(&mut self, graph: &Graph) {
         if self.response().secondary_clicked() {
             if let Some(mouse_pos) = self.response().interact_pointer_pos() {
-                for (index, node) in graph.nodes() {
+                for (id, node) in graph.nodes() {
                     if node.position.distance(mouse_pos) < node.radius {
-                        self.new_edge_start = Some(*index);
+                        self.new_edge_start = Some(*id);
                         break;
                     }
                 }
@@ -140,8 +140,8 @@ impl Canvas {
 
     fn draw_edge(&self, graph: &Graph, edge: &Edge) {
         let (start, end) = Self::calculate_border_intersection(
-            &graph.nodes()[&edge.start_index],
-            &graph.nodes()[&edge.end_index],
+            &graph.nodes()[&edge.start_id],
+            &graph.nodes()[&edge.end_id],
         );
 
         self.painter()
