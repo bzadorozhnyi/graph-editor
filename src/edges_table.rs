@@ -1,7 +1,7 @@
 use eframe::egui;
 use egui_extras::{Column, TableBuilder};
 
-use crate::graph::Graph;
+use crate::graph::{edge::EdgeId, Graph};
 
 pub struct EdgesTable {}
 
@@ -28,7 +28,8 @@ impl EdgesTable {
             .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
             .column(Column::auto())
             .column(Column::remainder().resizable(true))
-            .column(Column::remainder().resizable(true));
+            .column(Column::remainder().resizable(true))
+            .sense(egui::Sense::click());
 
         table
             .header(20.0, |mut header| {
@@ -48,10 +49,14 @@ impl EdgesTable {
 
                 // rows is more efficient, than row
                 // https://docs.rs/egui_extras/0.30.0/egui_extras/struct.TableBody.html#method.rows
-                // that's why using ids - to keep edges order 
+                // that's why using ids - to keep edges order
                 body.rows(20.0, graph.edges().len(), |mut row| {
                     let row_index = row.index();
                     let edge_id = &ids[row_index];
+
+                    if let Some(selected_id) = graph.selected_edge_id() {
+                        row.set_selected(selected_id == edge_id);
+                    }
 
                     row.col(|ui| {
                         ui.checkbox(
@@ -65,7 +70,28 @@ impl EdgesTable {
                     row.col(|ui| {
                         ui.label(&graph.nodes()[&graph.edges()[&edge_id].end_id].label);
                     });
+
+                    self.toggle_row_selection(edge_id, &row.response(), graph);
                 });
             });
+    }
+
+    fn toggle_row_selection(
+        &mut self,
+        edge_id: &EdgeId,
+        row_response: &egui::Response,
+        graph: &mut Graph,
+    ) {
+        if row_response.clicked() {
+            if let Some(selected_id) = graph.selected_edge_id() {
+                if selected_id == edge_id {
+                    graph.set_selected_edge_id(None);
+                } else {
+                    graph.set_selected_edge_id(Some(*edge_id));
+                }
+            } else {
+                graph.set_selected_edge_id(Some(*edge_id));
+            }
+        }
     }
 }

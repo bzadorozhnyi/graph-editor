@@ -42,7 +42,7 @@ impl NodeEditor {
                 .add(Button::new(RichText::new("Delete").color(Color32::WHITE)).fill(Color32::RED))
                 .clicked()
             {
-                graph.remove_selected();
+                graph.remove_selected_node();
             }
         } else {
             ui.label("No node selected");

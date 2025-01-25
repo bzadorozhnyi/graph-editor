@@ -1,6 +1,7 @@
 use eframe::egui::{self};
 use graph_editor_egui::{
     canvas::Canvas,
+    edge_editor::EdgeEditor,
     edges_table::EdgesTable,
     graph::{Graph, Node},
     node_editor::NodeEditor,
@@ -23,6 +24,8 @@ struct MyApp {
     node_editor_open: bool,
     edges_table: EdgesTable,
     edges_table_open: bool,
+    edge_editor: EdgeEditor,
+    edge_editor_open: bool,
 }
 
 impl Default for MyApp {
@@ -34,6 +37,8 @@ impl Default for MyApp {
             node_editor_open: false,
             edges_table: EdgesTable::new(),
             edges_table_open: false,
+            edge_editor: EdgeEditor::new(),
+            edge_editor_open: false,
         }
     }
 }
@@ -50,6 +55,9 @@ impl eframe::App for MyApp {
                 }
                 if ui.button("Edges Table").clicked() {
                     self.edges_table_open = !self.edges_table_open;
+                }
+                if ui.button("Edge Editor").clicked() {
+                    self.edge_editor_open = !self.edge_editor_open;
                 }
             });
 
@@ -68,6 +76,9 @@ impl eframe::App for MyApp {
 
             self.edges_table
                 .show(ctx, &mut self.edges_table_open, &mut self.graph);
+
+            self.edge_editor
+                .show(ctx, &mut self.edge_editor_open, &mut self.graph);
 
             self.canvas.draw_possible_edge(&self.graph);
             self.canvas.draw_edges(&self.graph);

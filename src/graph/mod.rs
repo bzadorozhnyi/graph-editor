@@ -14,6 +14,7 @@ pub struct Graph {
     nodes: HashMap<NodeId, Node>,
     edges: BTreeMap<EdgeId, Edge>,
     selected_node_id: Option<NodeId>,
+    selected_edge_id: Option<EdgeId>,
     dragging: Option<NodeId>,
     node_id_counter: usize,
     edge_id_counter: usize,
@@ -25,9 +26,10 @@ impl Graph {
             nodes: HashMap::new(),
             edges: BTreeMap::new(),
             selected_node_id: None,
+            selected_edge_id: None,
             dragging: None,
             node_id_counter: 0,
-            edge_id_counter: 0
+            edge_id_counter: 0,
         }
     }
 
@@ -80,11 +82,29 @@ impl Graph {
             .map(|id| self.nodes_mut().get_mut(&id).unwrap())
     }
 
-    pub fn set_selected_node_id(&mut self, selected_node_id: Option<NodeId>) {
-        self.selected_node_id = selected_node_id;
+    pub fn selected_edge_mut(&mut self) -> Option<&mut Edge> {
+        self.selected_edge_id
+            .map(|id| self.edges_mut().get_mut(&id).unwrap())
     }
 
-    pub fn remove_selected(&mut self) {
+    pub fn selected_edge(&self) -> Option<&Edge> {
+        self.selected_edge_id
+            .map(|id| self.edges().get(&id).unwrap())
+    }
+
+    pub fn selected_edge_id(&mut self) -> &Option<EdgeId> {
+        &self.selected_edge_id
+    }
+
+    pub fn set_selected_node_id(&mut self, node_id: Option<NodeId>) {
+        self.selected_node_id = node_id;
+    }
+
+    pub fn set_selected_edge_id(&mut self, edge_id: Option<EdgeId>) {
+        self.selected_edge_id = edge_id;
+    }
+
+    pub fn remove_selected_node(&mut self) {
         if let Some(selected_id) = self.selected_node_id {
             self.remove_node(selected_id);
         }
@@ -106,5 +126,15 @@ impl Graph {
         self.nodes_mut().remove(&id);
         self.edges_mut()
             .retain(|_, e| e.start_id != id && e.end_id != id);
+
+        // removed selected edge if node is part of it
+        if let Some(selected_edge_id) = self.selected_edge_id {
+            let selected_edge = self.edges().get(&selected_edge_id);
+
+            // meaning we removed it when deleting edges connected to node
+            if selected_edge.is_none() {
+                self.set_selected_edge_id(None);
+            }
+        }
     }
 }

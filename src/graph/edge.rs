@@ -1,6 +1,6 @@
 use super::NodeId;
 
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct EdgeId(pub usize);
 
 #[derive(Debug)]
