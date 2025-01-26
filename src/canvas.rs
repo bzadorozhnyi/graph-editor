@@ -1,5 +1,5 @@
 use eframe::{
-    egui::{Color32, Painter, Pos2, Response, Sense, Stroke, Ui},
+    egui::{Color32, Painter, Pos2, Rect, Response, Sense, Stroke, Ui},
     emath::Rot2,
 };
 
@@ -8,6 +8,7 @@ use crate::graph::{Edge, Graph, Node, NodeId};
 pub struct Canvas {
     response: Option<Response>,
     painter: Option<Painter>,
+    painter_area: Rect,
     new_edge_start: Option<NodeId>,
 }
 
@@ -16,6 +17,7 @@ impl Canvas {
         Canvas {
             response: None,
             painter: None,
+            painter_area: Rect::ZERO,
             new_edge_start: None,
         }
     }
@@ -32,20 +34,49 @@ impl Canvas {
             .expect("Canvas::setup() must be called first!")
     }
 
-    pub fn setup(&mut self, ui: &mut Ui) {
-        let rect = ui.max_rect();
-        let size = rect.size();
+    pub fn setup(&mut self, ui: &mut Ui, menu_size: f32) {
+        let rect = ui.min_rect();
+        let rect = rect.with_min_y(rect.min.y + menu_size);
+
+        self.painter_area = rect;
+        let size = self.painter_area.size();
         let (response, painter) = ui.allocate_painter(size, Sense::click_and_drag());
-        painter.rect_filled(rect, 0.0, Color32::WHITE);
+        painter.rect_filled(self.painter_area, 0.0, Color32::WHITE);
 
         self.response = Some(response);
         self.painter = Some(painter);
     }
 
+    /// Evaluate new position of node, which satisfy painter's bounds constraints 
+    fn bounds_constraint_correction(&self, node: &Node, mouse_pos: Pos2) -> Pos2 {
+        let new_x = if mouse_pos.x - node.radius < self.painter_area.min.x {
+            self.painter_area.min.x + node.radius
+        } else if mouse_pos.x + node.radius > self.painter_area.max.x {
+            self.painter_area.max.x - node.radius
+        } else {
+            mouse_pos.x
+        };
+
+        let new_y = if mouse_pos.y - node.radius < self.painter_area.min.y {
+            self.painter_area.min.y + node.radius
+        } else if mouse_pos.y + node.radius > self.painter_area.max.y {
+            self.painter_area.max.y - node.radius
+        } else {
+            mouse_pos.y
+        };
+
+        Pos2::new(new_x, new_y)
+    }
+
     pub fn handle_draging(&mut self, graph: &mut Graph) {
         if let Some(mouse_pos) = self.response().interact_pointer_pos() {
             if let Some(id) = graph.dragging() {
-                graph.nodes_mut().get_mut(&id).unwrap().position = mouse_pos;
+                let node = graph.nodes().get(&id).unwrap();
+                let new_pos = self.bounds_constraint_correction(node, mouse_pos);
+
+                if self.response().rect.contains(new_pos) {
+                    graph.nodes_mut().get_mut(&id).unwrap().position = new_pos;
+                }
             } else {
                 let mut dragging = None;
                 for (id, node) in graph.nodes().iter() {
