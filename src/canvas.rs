@@ -1,5 +1,5 @@
 use eframe::{
-    egui::{Color32, Painter, Pos2, Rect, Response, Sense, Stroke, Ui},
+    egui::{self, Color32, Painter, Pos2, Rect, Response, Sense, Stroke, Ui},
     emath::Rot2,
 };
 
@@ -47,7 +47,7 @@ impl Canvas {
         self.painter = Some(painter);
     }
 
-    /// Evaluate new position of node, which satisfy painter's bounds constraints 
+    /// Evaluate new position of node, which satisfy painter's bounds constraints
     fn bounds_constraint_correction(&self, node: &Node, mouse_pos: Pos2) -> Pos2 {
         let new_x = if mouse_pos.x - node.radius < self.painter_area.min.x {
             self.painter_area.min.x + node.radius
@@ -112,6 +112,16 @@ impl Canvas {
     /// Return true if edge was created
     pub fn handle_edge_creation(&mut self, graph: &mut Graph) -> bool {
         let mut edge_created = false;
+
+        // if Escape pressed => we dont' creating edge anymore
+        if self
+                .response()
+                .ctx
+                .input(|i| i.key_pressed(egui::Key::Escape))
+        {
+            self.new_edge_start = None;
+            return false;
+        }
 
         if let (Some(edge_start), Some(mouse_pos)) =
             (self.new_edge_start, self.response().interact_pointer_pos())
