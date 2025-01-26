@@ -33,9 +33,9 @@ impl Canvas {
     }
 
     pub fn setup(&mut self, ui: &mut Ui) {
-        let size = ui.ctx().screen_rect().size();
+        let rect = ui.max_rect();
+        let size = rect.size();
         let (response, painter) = ui.allocate_painter(size, Sense::click_and_drag());
-        let rect = response.rect;
         painter.rect_filled(rect, 0.0, Color32::WHITE);
 
         self.response = Some(response);
