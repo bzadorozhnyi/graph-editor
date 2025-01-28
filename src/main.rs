@@ -50,18 +50,13 @@ impl eframe::App for MyApp {
                 if ui.button("New").clicked() {
                     self.graph.add_node(Node::new());
                 }
-                if ui.button("Node Editor").clicked() {
-                    self.node_editor_open = !self.node_editor_open;
-                }
-                if ui.button("Edges Table").clicked() {
-                    self.edges_table_open = !self.edges_table_open;
-                }
-                if ui.button("Edge Editor").clicked() {
-                    self.edge_editor_open = !self.edge_editor_open;
-                }
+                ui.toggle_value(&mut self.node_editor_open, "Node Editor");
+                ui.toggle_value(&mut self.edges_table_open, "Edges Table");
+                ui.toggle_value(&mut self.edge_editor_open, "Edge Editor");
             });
 
-            self.canvas.setup(ui, bar_resonse.response.rect.height() * 1.25);
+            self.canvas
+                .setup(ui, bar_resonse.response.rect.height() * 1.25);
             self.canvas.handle_draging(&mut self.graph);
             self.canvas.handle_node_selection(&mut self.graph);
 
