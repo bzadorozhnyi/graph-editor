@@ -76,16 +76,14 @@ impl Canvas {
         if let Some(mouse_pos) = self.response().interact_pointer_pos() {
             if let Some(id) = graph.dragging() {
                 let node = graph.nodes().get(&id).unwrap();
-                let new_pos = self.bounds_constraint_correction(node, mouse_pos);
-
-                if self.response().rect.contains(new_pos) {
-                    graph.nodes_mut().get_mut(&id).unwrap().position = new_pos;
-                }
+                let corrected_pos = self.bounds_constraint_correction(node, mouse_pos);
+                graph.nodes_mut().get_mut(&id).unwrap().position = corrected_pos;
             } else {
                 let mut dragging = None;
                 for (id, node) in graph.nodes().iter() {
                     if node.position.distance(mouse_pos) < node.radius {
                         dragging = Some(*id);
+                        break;
                     }
                 }
 
@@ -127,23 +125,25 @@ impl Canvas {
             return false;
         }
 
-        if let (Some(edge_start), Some(mouse_pos)) =
-            (self.new_edge_start, self.response().interact_pointer_pos())
-        {
-            if self.response().secondary_clicked() {
-                let mut edge_end = None;
-                for (id, node) in graph.nodes() {
-                    if *id != edge_start && node.position.distance(mouse_pos) < node.radius {
-                        edge_end = Some(*id);
-                        break;
-                    }
-                }
+        if !self.response().secondary_clicked() {
+            return false;
+        }
 
-                if let Some(edge_end) = edge_end {
-                    graph.add_edge(Edge::new(edge_start, edge_end));
-                    self.new_edge_start = None;
-                    edge_created = true;
+        if let Some(edge_start) = self.new_edge_start {
+            let mut edge_end = None;
+            let mouse_pos = self.response().interact_pointer_pos().unwrap();
+
+            for (id, node) in graph.nodes() {
+                if *id != edge_start && node.position.distance(mouse_pos) < node.radius {
+                    edge_end = Some(*id);
+                    break;
                 }
+            }
+
+            if let Some(edge_end) = edge_end {
+                graph.add_edge(Edge::new(edge_start, edge_end));
+                self.new_edge_start = None;
+                edge_created = true;
             }
         }
 
@@ -152,12 +152,11 @@ impl Canvas {
 
     pub fn handle_setting_edge_start(&mut self, graph: &Graph) {
         if self.response().secondary_clicked() {
-            if let Some(mouse_pos) = self.response().interact_pointer_pos() {
-                for (id, node) in graph.nodes() {
-                    if node.position.distance(mouse_pos) < node.radius {
-                        self.new_edge_start = Some(*id);
-                        break;
-                    }
+            let mouse_pos = self.response().interact_pointer_pos().unwrap();
+            for (id, node) in graph.nodes() {
+                if node.position.distance(mouse_pos) < node.radius {
+                    self.new_edge_start = Some(*id);
+                    break;
                 }
             }
         }
