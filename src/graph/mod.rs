@@ -6,7 +6,6 @@ use std::collections::HashMap;
 
 pub use edge::Edge;
 use edge::EdgeId;
-use eframe::egui::Painter;
 pub use node::Node;
 pub use node::NodeId;
 
@@ -61,12 +60,6 @@ impl Graph {
         self.edge_id_counter += 1;
 
         self.edges.insert(EdgeId(edge_id), edge);
-    }
-
-    pub fn draw_nodes(&self, painter: &Painter) {
-        for node in self.nodes.values() {
-            node.draw(painter);
-        }
     }
 
     pub fn dragging(&self) -> Option<NodeId> {

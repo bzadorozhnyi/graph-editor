@@ -1,7 +1,7 @@
 use eframe::{
     egui::{
-        self, Color32, FontSelection, Painter, Pos2, Rect, Response, RichText, Sense, Stroke, Ui,
-        Vec2, WidgetText,
+        self, Align2, Color32, FontFamily, FontId, FontSelection, Painter, Pos2, Rect, Response,
+        RichText, Sense, Stroke, Ui, Vec2, WidgetText,
     },
     emath::Rot2,
     epaint::TextShape,
@@ -255,9 +255,26 @@ impl Canvas {
         }
     }
 
+    pub fn draw_node(&self, node: &Node) {
+        self.painter().circle(
+            node.position,
+            node.radius,
+            node.color,
+            Stroke::new(0.0, Color32::BLACK),
+        );
+
+        self.painter().text(
+            node.position,
+            Align2::CENTER_CENTER,
+            node.label.clone(),
+            FontId::new(node.radius, FontFamily::Monospace),
+            Color32::BLACK,
+        );
+    }
+
     pub fn draw_nodes(&mut self, graph: &Graph) {
         for node in graph.nodes().values() {
-            node.draw(self.painter());
+            self.draw_node(node);
         }
     }
 }
