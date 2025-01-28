@@ -81,8 +81,10 @@ impl Graph {
     }
 
     pub fn selected_edge(&self) -> Option<&Edge> {
-        self.selected_edge_id
-            .map(|id| self.edges().get(&id).unwrap())
+        match self.selected_edge_id {
+            Some(id) => self.edges().get(&id),
+            None => None,
+        }
     }
 
     pub fn selected_edge_id(&mut self) -> &Option<EdgeId> {
@@ -120,14 +122,10 @@ impl Graph {
         self.edges_mut()
             .retain(|_, e| e.start_id != id && e.end_id != id);
 
-        // removed selected edge if node is part of it
-        if let Some(selected_edge_id) = self.selected_edge_id {
-            let selected_edge = self.edges().get(&selected_edge_id);
-
-            // meaning we removed it when deleting edges connected to node
-            if selected_edge.is_none() {
-                self.set_selected_edge_id(None);
-            }
+        // meaning we removed edge when deleting edges connected to node
+        // but must set selected id = None
+        if self.selected_edge().is_none() {
+            self.set_selected_edge_id(None);
         }
     }
 }
