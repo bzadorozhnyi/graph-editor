@@ -25,8 +25,9 @@ impl EdgesTable {
 
     fn ui(&mut self, ui: &mut egui::Ui, graph: &mut Graph) {
         let table = TableBuilder::new(ui)
-            .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
+            .cell_layout(egui::Layout::top_down(egui::Align::Center))
             .column(Column::auto())
+            .column(Column::remainder().resizable(true))
             .column(Column::remainder().resizable(true))
             .column(Column::remainder().resizable(true))
             .sense(egui::Sense::click());
@@ -41,6 +42,9 @@ impl EdgesTable {
                 });
                 header.col(|ui| {
                     ui.strong("End");
+                });
+                header.col(|ui| {
+                    ui.strong("Label");
                 });
             })
             .body(|body| {
@@ -69,6 +73,9 @@ impl EdgesTable {
                     });
                     row.col(|ui| {
                         ui.label(&graph.nodes()[&graph.edges()[&edge_id].end_id].label);
+                    });
+                    row.col(|ui| {
+                        ui.label(&graph.edges().get(edge_id).unwrap().label);
                     });
 
                     self.toggle_row_selection(edge_id, &row.response(), graph);

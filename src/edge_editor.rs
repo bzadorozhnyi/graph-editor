@@ -1,4 +1,4 @@
-use eframe::egui;
+use eframe::egui::{self, Slider};
 
 use crate::graph::Graph;
 
@@ -28,19 +28,41 @@ impl EdgeEditor {
         } else {
             let selected_edge = graph.selected_edge().unwrap();
 
-            ui.label("Edge");
+            ui.vertical(|ui| {
+                ui.label(format!(
+                    "{} ➡ {}",
+                    &graph.nodes()[&selected_edge.start_id].label,
+                    &graph.nodes()[&selected_edge.end_id].label
+                ));
+            });
             ui.separator();
-            ui.label(format!(
-                "Start: {}",
-                &graph.nodes()[&selected_edge.start_id].label
-            ));
-            ui.label(format!(
-                "End: {}",
-                &graph.nodes()[&selected_edge.end_id].label
-            ));
 
             let selected_edge = graph.selected_edge_mut().unwrap();
             ui.checkbox(&mut selected_edge.oriented, "Oriented");
+
+            ui.separator();
+            ui.horizontal(|ui| {
+                ui.text_edit_singleline(&mut selected_edge.label);
+                ui.label("Label");
+            });
+
+            ui.separator();
+            ui.vertical(|ui| {
+                ui.label("Label Padding");
+                ui.horizontal(|ui| {
+                    ui.add(Slider::new(&mut selected_edge.padding_x, -40.0..=40.0).text("X"));
+                    if ui.button("⟲").clicked() {
+                        selected_edge.padding_x = 0.0;
+                    }
+                });
+                ui.add_space(5.0);
+                ui.horizontal(|ui| {
+                    ui.add(Slider::new(&mut selected_edge.padding_y, -40.0..=40.0).text("Y"));
+                    if ui.button("⟲").clicked() {
+                        selected_edge.padding_y = 0.0;
+                    }
+                });
+            });
         }
     }
 }

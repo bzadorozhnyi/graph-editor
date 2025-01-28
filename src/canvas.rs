@@ -1,6 +1,10 @@
 use eframe::{
-    egui::{self, Color32, Painter, Pos2, Rect, Response, Sense, Stroke, Ui},
+    egui::{
+        self, Color32, FontSelection, Painter, Pos2, Rect, Response, RichText, Sense, Stroke, Ui,
+        Vec2, WidgetText,
+    },
     emath::Rot2,
+    epaint::TextShape,
 };
 
 use crate::graph::{Edge, Graph, Node, NodeId};
@@ -115,9 +119,9 @@ impl Canvas {
 
         // if Escape pressed => we dont' creating edge anymore
         if self
-                .response()
-                .ctx
-                .input(|i| i.key_pressed(egui::Key::Escape))
+            .response()
+            .ctx
+            .input(|i| i.key_pressed(egui::Key::Escape))
         {
             self.new_edge_start = None;
             return false;
@@ -179,33 +183,75 @@ impl Canvas {
         (start, end)
     }
 
-    fn draw_edge(&self, graph: &Graph, edge: &Edge) {
+    fn draw_edge_label(&self, ui: &mut Ui, edge: &Edge, edge_start: Pos2, edge_end: Pos2) {
+        let text = WidgetText::RichText(RichText::new(&edge.label));
+        let text_galley = text.into_galley(ui, None, f32::INFINITY, FontSelection::Default);
+        let galley_size = text_galley.size();
+
+        let midpoint = Pos2::new(
+            (edge_start.x + edge_end.x) / 2.0,
+            (edge_start.y + edge_end.y) / 2.0,
+        );
+
+        let direction = (edge_end - edge_start).normalized();
+        let mut angle = direction.angle();
+        // change for correct text orientation
+        if direction.x < 0.0 {
+            angle += std::f32::consts::PI;
+        }
+
+        // Compute rotated offset
+        let half_width = (galley_size.x + edge.padding_x) / 2.0;
+        let half_height = (galley_size.y + edge.padding_y) / 2.0;
+
+        // Offset to center the rotated text
+        let offset_x = half_width * angle.cos() - half_height * angle.sin();
+        let offset_y = half_width * angle.sin() + half_height * angle.cos();
+
+        // Adjust the position to properly center the text
+        let centered_position = midpoint - Vec2::new(offset_x, offset_y);
+
+        let mut text_shape = TextShape::new(centered_position, text_galley.clone(), Color32::BLACK);
+        text_shape.angle = angle;
+
+        self.painter().add(text_shape);
+    }
+
+    fn draw_arrow(&self, edge_start: Pos2, edge_end: Pos2) {
+        let rotation = Rot2::from_angle(std::f32::consts::TAU / 10.0);
+        let direction = (edge_end - edge_start).normalized();
+
+        self.painter().line_segment(
+            [edge_end, edge_end - 10.0 * (rotation * direction)],
+            Stroke::new(2.0, Color32::BLACK),
+        );
+        self.painter().line_segment(
+            [edge_end, edge_end - 10.0 * (rotation.inverse() * direction)],
+            Stroke::new(2.0, Color32::BLACK),
+        );
+    }
+
+    fn draw_edge(&self, ui: &mut Ui, graph: &Graph, edge: &Edge) {
         let (start, end) = Self::calculate_border_intersection(
             &graph.nodes()[&edge.start_id],
             &graph.nodes()[&edge.end_id],
         );
 
+        if !edge.label.is_empty() {
+            self.draw_edge_label(ui, edge, start, end);
+        }
+
         self.painter()
             .line_segment([start, end], Stroke::new(2.0, Color32::BLACK));
 
         if edge.oriented {
-            let rotation = Rot2::from_angle(std::f32::consts::TAU / 10.0);
-            let direction = (end - start).normalized();
-
-            self.painter().line_segment(
-                [end, end - 10.0 * (rotation * direction)],
-                Stroke::new(2.0, Color32::BLACK),
-            );
-            self.painter().line_segment(
-                [end, end - 10.0 * (rotation.inverse() * direction)],
-                Stroke::new(2.0, Color32::BLACK),
-            );
+            self.draw_arrow(start, end);
         }
     }
 
-    pub fn draw_edges(&mut self, graph: &Graph) {
+    pub fn draw_edges(&mut self, ui: &mut Ui, graph: &Graph) {
         for edge in graph.edges().values() {
-            self.draw_edge(graph, edge);
+            self.draw_edge(ui, graph, edge);
         }
     }
 
