@@ -184,7 +184,7 @@ impl Canvas {
     }
 
     fn draw_edge_label(&self, ui: &mut Ui, edge: &Edge, edge_start: Pos2, edge_end: Pos2) {
-        let text = WidgetText::RichText(RichText::new(&edge.label));
+        let text = WidgetText::RichText(RichText::new(&edge.label).size(edge.label_size));
         let text_galley = text.into_galley(ui, None, f32::INFINITY, FontSelection::Default);
         let galley_size = text_galley.size();
 

@@ -48,6 +48,12 @@ impl EdgeEditor {
 
             ui.separator();
             ui.vertical(|ui| {
+                ui.label("Label Size");
+                ui.add(Slider::new(&mut selected_edge.label_size, 10.0..=36.0));
+            });
+
+            ui.separator();
+            ui.vertical(|ui| {
                 ui.label("Label Padding");
                 ui.horizontal(|ui| {
                     ui.add(Slider::new(&mut selected_edge.padding_x, -40.0..=40.0).text("X"));

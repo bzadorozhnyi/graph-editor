@@ -9,8 +9,9 @@ pub struct Edge {
     pub end_id: NodeId,
     pub oriented: bool,
     pub label: String,
+    pub label_size: f32,
     pub padding_x: f32,
-    pub padding_y: f32
+    pub padding_y: f32,
 }
 
 impl Edge {
@@ -20,6 +21,7 @@ impl Edge {
             end_id: end_index,
             oriented: true,
             label: String::new(),
+            label_size: 10.0,
             padding_x: 0.0,
             padding_y: 0.0,
         }
