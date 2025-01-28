@@ -103,6 +103,12 @@ impl Graph {
         }
     }
 
+    pub fn remove_selected_edge(&mut self) {
+        if let Some(selected_id) = self.selected_edge_id {
+            self.remove_edge(selected_id);
+        }
+    }
+
     pub fn remove_node(&mut self, id: NodeId) {
         if let Some(selected_id) = self.selected_node_id {
             if id == selected_id {
@@ -124,5 +130,15 @@ impl Graph {
         if self.selected_edge().is_none() {
             self.set_selected_edge_id(None);
         }
+    }
+
+    pub fn remove_edge(&mut self, id: EdgeId) {
+        if let Some(selected_id) = self.selected_edge_id {
+            if id == selected_id {
+                self.selected_edge_id = None;
+            }
+        }
+
+        self.edges.retain(|&edge_id, _| edge_id != id);
     }
 }

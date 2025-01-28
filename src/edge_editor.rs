@@ -1,4 +1,4 @@
-use eframe::egui::{self, Slider};
+use eframe::egui::{self, Button, Color32, RichText, Slider};
 
 use crate::graph::Graph;
 
@@ -69,6 +69,15 @@ impl EdgeEditor {
                     }
                 });
             });
+
+            ui.separator();
+
+            if ui
+                .add(Button::new(RichText::new("Delete").color(Color32::WHITE)).fill(Color32::RED))
+                .clicked()
+            {
+                graph.remove_selected_edge();
+            }
         }
     }
 }
