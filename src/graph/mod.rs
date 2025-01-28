@@ -36,16 +36,16 @@ impl Graph {
         &self.nodes
     }
 
-    pub fn nodes_mut(&mut self) -> &mut HashMap<NodeId, Node> {
-        &mut self.nodes
+    pub fn node_mut(&mut self, id: &NodeId) -> Option<&mut Node> {
+        self.nodes.get_mut(id)
     }
 
     pub fn edges(&self) -> &BTreeMap<EdgeId, Edge> {
         &self.edges
     }
 
-    pub fn edges_mut(&mut self) -> &mut BTreeMap<EdgeId, Edge> {
-        &mut self.edges
+    pub fn edge_mut(&mut self, id: &EdgeId) -> Option<&mut Edge> {
+        self.edges.get_mut(id)
     }
 
     pub fn add_node(&mut self, node: Node) {
@@ -71,13 +71,11 @@ impl Graph {
     }
 
     pub fn selected_node_mut(&mut self) -> Option<&mut Node> {
-        self.selected_node_id
-            .map(|id| self.nodes_mut().get_mut(&id).unwrap())
+        self.selected_node_id.map(|id| self.node_mut(&id).unwrap())
     }
 
     pub fn selected_edge_mut(&mut self) -> Option<&mut Edge> {
-        self.selected_edge_id
-            .map(|id| self.edges_mut().get_mut(&id).unwrap())
+        self.selected_edge_id.map(|id| self.edge_mut(&id).unwrap())
     }
 
     pub fn selected_edge(&self) -> Option<&Edge> {
@@ -118,9 +116,8 @@ impl Graph {
             }
         }
 
-        self.nodes_mut().remove(&id);
-        self.edges_mut()
-            .retain(|_, e| e.start_id != id && e.end_id != id);
+        self.nodes.remove(&id);
+        self.edges.retain(|_, e| e.start_id != id && e.end_id != id);
 
         // meaning we removed edge when deleting edges connected to node
         // but must set selected id = None

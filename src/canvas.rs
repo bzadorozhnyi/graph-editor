@@ -77,7 +77,7 @@ impl Canvas {
             if let Some(id) = graph.dragging() {
                 let node = graph.nodes().get(&id).unwrap();
                 let corrected_pos = self.bounds_constraint_correction(node, mouse_pos);
-                graph.nodes_mut().get_mut(&id).unwrap().position = corrected_pos;
+                graph.node_mut(&id).unwrap().position = corrected_pos;
             } else {
                 let mut dragging = None;
                 for (id, node) in graph.nodes().iter() {

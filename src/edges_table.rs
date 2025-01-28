@@ -64,7 +64,7 @@ impl EdgesTable {
 
                     row.col(|ui| {
                         ui.checkbox(
-                            &mut graph.edges_mut().get_mut(edge_id).unwrap().oriented,
+                            &mut graph.edge_mut(edge_id).unwrap().oriented,
                             "",
                         );
                     });
