@@ -1,4 +1,6 @@
-use eframe::egui::{self, color_picker::color_edit_button_rgba, Button, Color32, RichText, Slider};
+use eframe::egui::{
+    self, color_picker::color_edit_button_rgba, Button, Color32, DragValue, RichText, Slider,
+};
 
 use crate::graph::Graph;
 
@@ -51,6 +53,14 @@ impl EdgeEditor {
                 };
                 ui.toggle_value(&mut selected_edge.oriented, oriented);
             });
+
+            ui.add_space(5.0);
+            ui.add(
+                DragValue::new(&mut selected_edge.width)
+                    .range(1.0..=5.0)
+                    .speed(0.2)
+                    .prefix("Width: "),
+            );
 
             ui.separator();
             ui.horizontal(|ui| {

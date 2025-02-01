@@ -216,7 +216,7 @@ impl Canvas {
         );
     }
 
-    fn draw_arrow(&self, start: Pos2, end: Pos2, color: Rgba) {
+    fn draw_arrow(&self, start: Pos2, end: Pos2, color: Rgba, width: f32) {
         let direction = (end - start).normalized();
         let rotation = Rot2::from_angle(ARROW_HALF_ANGLE);
 
@@ -225,7 +225,7 @@ impl Canvas {
 
         for arrow in [arrow_left, arrow_right] {
             self.painter()
-                .line_segment([end, arrow], Stroke::new(2.0, color));
+                .line_segment([end, arrow], Stroke::new(width, color));
         }
     }
 
@@ -265,7 +265,7 @@ impl Canvas {
             [start, control, end],
             false,
             Color32::TRANSPARENT,
-            Stroke::new(2.0, edge.color),
+            Stroke::new(edge.width, edge.color),
         ));
 
         if !edge.label.is_empty() {
@@ -273,7 +273,7 @@ impl Canvas {
         }
 
         if edge.oriented {
-            self.draw_arrow(control, end, edge.color);
+            self.draw_arrow(control, end, edge.color, edge.width);
         }
     }
 

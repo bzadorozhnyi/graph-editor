@@ -15,6 +15,7 @@ pub struct Edge {
     pub label_size: f32,
     pub padding_x: f32,
     pub padding_y: f32,
+    pub width: f32
 }
 
 impl Edge {
@@ -28,6 +29,7 @@ impl Edge {
             label_size: 10.0,
             padding_x: 0.0,
             padding_y: 0.0,
+            width: 2.0
         }
     }
 }
