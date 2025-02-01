@@ -1,13 +1,18 @@
+use std::collections::HashMap;
+
 use eframe::{
     egui::{
         self, Align2, Color32, FontFamily, FontId, FontSelection, Painter, Pos2, Rect, Response,
         RichText, Sense, Stroke, Ui, Vec2, WidgetText,
     },
     emath::Rot2,
-    epaint::TextShape,
+    epaint::{QuadraticBezierShape, TextShape},
 };
 
-use crate::graph::{Edge, Graph, Node, NodeId};
+use crate::{
+    consts::{ARROW_HALF_ANGLE, ARROW_LEN, CONTROL_OFFSET, DELTA_ANGLE},
+    graph::{Edge, Graph, Node, NodeId},
+};
 
 pub struct Canvas {
     response: Option<Response>,
@@ -173,7 +178,7 @@ impl Canvas {
         }
     }
 
-    fn calculate_border_intersection(node1: &Node, node2: &Node) -> (Pos2, Pos2) {
+    fn calculate_border_intersection(&self, node1: &Node, node2: &Node) -> (Pos2, Pos2) {
         let direction = (node2.position - node1.position).normalized();
 
         let start = node1.position + direction * node1.radius;
@@ -182,22 +187,17 @@ impl Canvas {
         (start, end)
     }
 
-    fn draw_edge_label(&self, ui: &mut Ui, edge: &Edge, edge_start: Pos2, edge_end: Pos2) {
+    fn draw_edge_label(&self, ui: &mut Ui, edge: &Edge, start: Pos2, control: Pos2, end: Pos2) {
         let text = WidgetText::RichText(RichText::new(&edge.label).size(edge.label_size));
         let text_galley = text.into_galley(ui, None, f32::INFINITY, FontSelection::Default);
         let galley_size = text_galley.size();
 
-        let midpoint = Pos2::new(
-            (edge_start.x + edge_end.x) / 2.0,
-            (edge_start.y + edge_end.y) / 2.0,
-        );
-
-        let direction = (edge_end - edge_start).normalized();
-        let mut angle = direction.angle();
-        // change for correct text orientation
-        if direction.x < 0.0 {
-            angle += std::f32::consts::PI;
-        }
+        let direction = (end - start).normalized();
+        let angle = if direction.x <= 0.0 {
+            direction.angle() + std::f32::consts::PI
+        } else {
+            direction.angle()
+        };
 
         // Compute rotated offset
         let half_width = (galley_size.x + edge.padding_x) / 2.0;
@@ -208,49 +208,99 @@ impl Canvas {
         let offset_y = half_width * angle.sin() + half_height * angle.cos();
 
         // Adjust the position to properly center the text
-        let centered_position = midpoint - Vec2::new(offset_x, offset_y);
+        let centered_position = control - Vec2::new(offset_x, offset_y);
 
-        let mut text_shape = TextShape::new(centered_position, text_galley.clone(), Color32::BLACK);
-        text_shape.angle = angle;
-
-        self.painter().add(text_shape);
-    }
-
-    fn draw_arrow(&self, edge_start: Pos2, edge_end: Pos2) {
-        let rotation = Rot2::from_angle(std::f32::consts::TAU / 10.0);
-        let direction = (edge_end - edge_start).normalized();
-
-        self.painter().line_segment(
-            [edge_end, edge_end - 10.0 * (rotation * direction)],
-            Stroke::new(2.0, Color32::BLACK),
-        );
-        self.painter().line_segment(
-            [edge_end, edge_end - 10.0 * (rotation.inverse() * direction)],
-            Stroke::new(2.0, Color32::BLACK),
+        self.painter().add(
+            TextShape::new(centered_position, text_galley.clone(), Color32::BLACK)
+                .with_angle(angle),
         );
     }
 
-    fn draw_edge(&self, ui: &mut Ui, graph: &Graph, edge: &Edge) {
-        let (start, end) = Self::calculate_border_intersection(
-            &graph.nodes()[&edge.start_id],
-            &graph.nodes()[&edge.end_id],
-        );
+    fn draw_arrow(&self, start: Pos2, end: Pos2) {
+        let direction = (end - start).normalized();
+        let rotation = Rot2::from_angle(ARROW_HALF_ANGLE);
+
+        let arrow_left = end - ARROW_LEN * (rotation * direction);
+        let arrow_right = end - ARROW_LEN * (rotation.inverse() * direction);
+
+        for arrow in [arrow_left, arrow_right] {
+            self.painter()
+                .line_segment([end, arrow], Stroke::new(2.0, Color32::BLACK));
+        }
+    }
+
+    /// Rotate point on circle border (`border_pos`)
+    /// relative to circle's center (`center_pos`) by `alpha` degree (in radians).
+    fn rotate_border_point(&self, border_pos: Pos2, center_pos: Pos2, alpha: f32) -> Pos2 {
+        let rotation = Rot2::from_angle(alpha);
+        let translated = border_pos - center_pos;
+        let rotated = rotation * translated;
+
+        center_pos + rotated
+    }
+
+    fn draw_edge(&self, ui: &mut Ui, graph: &Graph, edge: &Edge, shift: f32) {
+        let d = if edge.start_id < edge.end_id {
+            -1.0
+        } else {
+            1.0
+        };
+
+        let (node_start, node_end) = (&graph.nodes()[&edge.start_id], &graph.nodes()[&edge.end_id]);
+        let (start, end) = self.calculate_border_intersection(node_start, node_end);
+        let start = self.rotate_border_point(start, node_start.position, DELTA_ANGLE * shift * d);
+        let end = self.rotate_border_point(end, node_end.position, -DELTA_ANGLE * shift * d);
+
+        let direction = if edge.start_id < edge.end_id {
+            end - start
+        } else {
+            start - end
+        }
+        .normalized();
+
+        let midpoint = Pos2::new((start.x + end.x) / 2.0, (start.y + end.y) / 2.0);
+        let control = midpoint + direction.rot90() * shift * CONTROL_OFFSET;
+
+        self.painter().add(QuadraticBezierShape::from_points_stroke(
+            [start, control, end],
+            false,
+            Color32::TRANSPARENT,
+            Stroke::new(2.0, Color32::BLACK),
+        ));
 
         if !edge.label.is_empty() {
-            self.draw_edge_label(ui, edge, start, end);
+            self.draw_edge_label(ui, edge, start, control, end);
         }
 
-        self.painter()
-            .line_segment([start, end], Stroke::new(2.0, Color32::BLACK));
-
         if edge.oriented {
-            self.draw_arrow(start, end);
+            self.draw_arrow(control, end);
         }
     }
 
     pub fn draw_edges(&mut self, ui: &mut Ui, graph: &Graph) {
+        let mut grouped_edges = HashMap::<(NodeId, NodeId), Vec<&Edge>>::new();
+
         for edge in graph.edges().values() {
-            self.draw_edge(ui, graph, edge);
+            let group_key = if edge.start_id < edge.end_id {
+                (edge.start_id, edge.end_id)
+            } else {
+                (edge.end_id, edge.start_id)
+            };
+
+            grouped_edges
+                .entry(group_key)
+                .and_modify(|v| v.push(edge))
+                .or_insert(vec![edge]);
+        }
+
+        for edges in grouped_edges.values() {
+            let edges_number = (edges.len() / 2) as isize;
+            let shifting =
+                (-edges_number..=edges_number).filter(|&n| edges.len() % 2 != 0 || n != 0);
+
+            for (&edge, shift) in edges.iter().zip(shifting) {
+                self.draw_edge(ui, graph, edge, shift as f32);
+            }
         }
     }
 

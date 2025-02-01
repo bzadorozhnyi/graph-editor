@@ -1,6 +1,6 @@
 use eframe::egui::{Color32, Pos2, Rgba};
 
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd)]
 pub struct NodeId(pub usize);
 
 #[derive(Debug)]
