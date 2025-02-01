@@ -1,5 +1,5 @@
 use eframe::egui::{
-    self, color_picker::color_edit_button_rgba, Button, Color32, DragValue, RichText, Slider,
+    self, color_picker::color_edit_button_rgba, Button, Color32, DragValue, RichText,
 };
 
 use crate::graph::Graph;
@@ -70,22 +70,38 @@ impl EdgeEditor {
 
             ui.separator();
             ui.vertical(|ui| {
-                ui.label("Label Size");
-                ui.add(Slider::new(&mut selected_edge.label_size, 10.0..=36.0));
-            });
-
-            ui.separator();
-            ui.vertical(|ui| {
-                ui.label("Label Padding");
+                ui.label("Label");
                 ui.horizontal(|ui| {
-                    ui.add(Slider::new(&mut selected_edge.padding_x, -40.0..=40.0).text("X"));
+                    ui.add(
+                        DragValue::new(&mut selected_edge.label_size)
+                            .range(10.0..=36.0)
+                            .speed(0.2)
+                            .prefix("Size: "),
+                    );
+                    if ui.button("⟲").clicked() {
+                        selected_edge.label_size = 10.0;
+                    }
+
+                    ui.add_space(10.0);
+
+                    ui.add(
+                        DragValue::new(&mut selected_edge.padding_x)
+                            .range(-100.0..=100.0)
+                            .speed(1.0)
+                            .prefix("X: "),
+                    );
                     if ui.button("⟲").clicked() {
                         selected_edge.padding_x = 0.0;
                     }
-                });
-                ui.add_space(5.0);
-                ui.horizontal(|ui| {
-                    ui.add(Slider::new(&mut selected_edge.padding_y, -40.0..=40.0).text("Y"));
+
+                    ui.add_space(10.0);
+
+                    ui.add(
+                        DragValue::new(&mut selected_edge.padding_y)
+                            .range(-100.0..=100.0)
+                            .speed(1.0)
+                            .prefix("Y: "),
+                    );
                     if ui.button("⟲").clicked() {
                         selected_edge.padding_y = 0.0;
                     }
