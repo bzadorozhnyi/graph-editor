@@ -1,5 +1,5 @@
 use eframe::egui::{
-    self, color_picker::color_edit_button_rgba, Button, Color32, DragValue, RichText,
+    self, color_picker::color_edit_button_rgba, Button, Color32, DragValue, Layout, RichText,
 };
 
 use crate::graph::Graph;
@@ -30,7 +30,7 @@ impl EdgeEditor {
         } else {
             let selected_edge = graph.selected_edge().unwrap();
 
-            ui.vertical(|ui| {
+            ui.with_layout(Layout::top_down(egui::Align::Center), |ui| {
                 ui.label(format!(
                     "{} ➡ {}",
                     &graph.nodes()[&selected_edge.start_id].label,
@@ -46,6 +46,15 @@ impl EdgeEditor {
                     &mut selected_edge.color,
                     egui::color_picker::Alpha::Opaque,
                 );
+                ui.add_space(5.0);
+                ui.add(
+                    DragValue::new(&mut selected_edge.width)
+                        .range(1.0..=5.0)
+                        .speed(0.2)
+                        .prefix("Width: "),
+                );
+
+                ui.add_space(5.0);
                 let oriented = if selected_edge.oriented {
                     "Oriented"
                 } else {
@@ -54,23 +63,15 @@ impl EdgeEditor {
                 ui.toggle_value(&mut selected_edge.oriented, oriented);
             });
 
-            ui.add_space(5.0);
-            ui.add(
-                DragValue::new(&mut selected_edge.width)
-                    .range(1.0..=5.0)
-                    .speed(0.2)
-                    .prefix("Width: "),
-            );
-
-            ui.separator();
-            ui.horizontal(|ui| {
-                ui.text_edit_singleline(&mut selected_edge.label);
-                ui.label("Label");
-            });
-
             ui.separator();
             ui.vertical(|ui| {
-                ui.label("Label");
+                ui.horizontal(|ui| {
+                    ui.label("Label: ");
+                    ui.text_edit_singleline(&mut selected_edge.label);
+                });
+
+                ui.add_space(5.0);
+
                 ui.horizontal(|ui| {
                     ui.add(
                         DragValue::new(&mut selected_edge.label_size)
@@ -82,7 +83,7 @@ impl EdgeEditor {
                         selected_edge.label_size = 10.0;
                     }
 
-                    ui.add_space(10.0);
+                    ui.add_space(5.0);
 
                     ui.add(
                         DragValue::new(&mut selected_edge.padding_x)
@@ -94,7 +95,7 @@ impl EdgeEditor {
                         selected_edge.padding_x = 0.0;
                     }
 
-                    ui.add_space(10.0);
+                    ui.add_space(5.0);
 
                     ui.add(
                         DragValue::new(&mut selected_edge.padding_y)
@@ -110,12 +111,17 @@ impl EdgeEditor {
 
             ui.separator();
 
-            if ui
-                .add(Button::new(RichText::new("Delete").color(Color32::WHITE)).fill(Color32::RED))
-                .clicked()
-            {
-                graph.remove_selected_edge();
-            }
+            ui.with_layout(Layout::right_to_left(egui::Align::TOP), |ui| {
+                if ui
+                    .add(
+                        Button::new(RichText::new("Delete").color(Color32::WHITE))
+                            .fill(Color32::RED),
+                    )
+                    .clicked()
+                {
+                    graph.remove_selected_edge();
+                }
+            });
         }
     }
 }
