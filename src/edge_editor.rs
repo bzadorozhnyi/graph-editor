@@ -44,7 +44,12 @@ impl EdgeEditor {
                     &mut selected_edge.color,
                     egui::color_picker::Alpha::Opaque,
                 );
-                ui.checkbox(&mut selected_edge.oriented, "Oriented");
+                let oriented = if selected_edge.oriented {
+                    "Oriented"
+                } else {
+                    "Unoriented"
+                };
+                ui.toggle_value(&mut selected_edge.oriented, oriented);
             });
 
             ui.separator();
