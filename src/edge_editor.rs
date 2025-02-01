@@ -1,4 +1,4 @@
-use eframe::egui::{self, Button, Color32, RichText, Slider};
+use eframe::egui::{self, color_picker::color_edit_button_rgba, Button, Color32, RichText, Slider};
 
 use crate::graph::Graph;
 
@@ -38,7 +38,14 @@ impl EdgeEditor {
             ui.separator();
 
             let selected_edge = graph.selected_edge_mut().unwrap();
-            ui.checkbox(&mut selected_edge.oriented, "Oriented");
+            ui.horizontal(|ui| {
+                color_edit_button_rgba(
+                    ui,
+                    &mut selected_edge.color,
+                    egui::color_picker::Alpha::Opaque,
+                );
+                ui.checkbox(&mut selected_edge.oriented, "Oriented");
+            });
 
             ui.separator();
             ui.horizontal(|ui| {

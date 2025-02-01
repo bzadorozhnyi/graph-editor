@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use eframe::{
     egui::{
         self, Align2, Color32, FontFamily, FontId, FontSelection, Painter, Pos2, Rect, Response,
-        RichText, Sense, Stroke, Ui, Vec2, WidgetText,
+        Rgba, RichText, Sense, Stroke, Ui, Vec2, WidgetText,
     },
     emath::Rot2,
     epaint::{QuadraticBezierShape, TextShape},
@@ -216,7 +216,7 @@ impl Canvas {
         );
     }
 
-    fn draw_arrow(&self, start: Pos2, end: Pos2) {
+    fn draw_arrow(&self, start: Pos2, end: Pos2, color: Rgba) {
         let direction = (end - start).normalized();
         let rotation = Rot2::from_angle(ARROW_HALF_ANGLE);
 
@@ -225,7 +225,7 @@ impl Canvas {
 
         for arrow in [arrow_left, arrow_right] {
             self.painter()
-                .line_segment([end, arrow], Stroke::new(2.0, Color32::BLACK));
+                .line_segment([end, arrow], Stroke::new(2.0, color));
         }
     }
 
@@ -265,7 +265,7 @@ impl Canvas {
             [start, control, end],
             false,
             Color32::TRANSPARENT,
-            Stroke::new(2.0, Color32::BLACK),
+            Stroke::new(2.0, edge.color),
         ));
 
         if !edge.label.is_empty() {
@@ -273,7 +273,7 @@ impl Canvas {
         }
 
         if edge.oriented {
-            self.draw_arrow(control, end);
+            self.draw_arrow(control, end, edge.color);
         }
     }
 
@@ -305,12 +305,8 @@ impl Canvas {
     }
 
     pub fn draw_node(&self, node: &Node) {
-        self.painter().circle(
-            node.position,
-            node.radius,
-            node.color,
-            Stroke::new(0.0, Color32::BLACK),
-        );
+        self.painter()
+            .circle(node.position, node.radius, node.color, Stroke::NONE);
 
         self.painter().text(
             node.position,
