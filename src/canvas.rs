@@ -43,9 +43,8 @@ impl Canvas {
             .expect("Canvas::setup() must be called first!")
     }
 
-    pub fn setup(&mut self, ui: &mut Ui, menu_size: f32) {
-        let rect = ui.min_rect();
-        let rect = rect.with_min_y(rect.min.y + menu_size);
+    pub fn setup(&mut self, ui: &mut Ui) {
+        let rect = ui.available_rect_before_wrap();
 
         self.painter_area = rect;
         let size = self.painter_area.size();

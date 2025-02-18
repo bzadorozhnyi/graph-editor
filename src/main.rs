@@ -46,7 +46,7 @@ impl Default for MyApp {
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &eframe::egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            let bar_resonse = egui::menu::bar(ui, |ui| {
+            egui::menu::bar(ui, |ui| {
                 if ui.button("New").clicked() {
                     self.graph.add_node(Node::new());
                 }
@@ -55,8 +55,7 @@ impl eframe::App for MyApp {
                 ui.toggle_value(&mut self.edge_editor_open, "Edge Editor");
             });
 
-            self.canvas
-                .setup(ui, bar_resonse.response.rect.height() * 1.25);
+            self.canvas.setup(ui);
             self.canvas.handle_draging(&mut self.graph);
             self.canvas.handle_node_selection(&mut self.graph);
 
