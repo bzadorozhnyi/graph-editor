@@ -307,15 +307,17 @@ impl Canvas {
         let midpoint = Pos2::new((start.x + end.x) / 2.0, (start.y + end.y) / 2.0);
         let control = midpoint + direction.rot90() * shift * CONTROL_OFFSET;
 
-        self.painter().add(QuadraticBezierShape::from_points_stroke(
+        let curve = QuadraticBezierShape::from_points_stroke(
             [start, control, end],
             false,
             Color32::TRANSPARENT,
             Stroke::new(edge.width, edge.color),
-        ));
+        );
+        let curve_control = curve.sample(0.5);
+        self.painter().add(curve);
 
         if !edge.label.is_empty() {
-            self.draw_edge_label(ui, edge, start, control, end);
+            self.draw_edge_label(ui, edge, start, curve_control, end);
         }
 
         if edge.oriented {
