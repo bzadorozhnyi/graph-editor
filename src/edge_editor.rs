@@ -54,13 +54,16 @@ impl EdgeEditor {
                         .prefix("Width: "),
                 );
 
-                ui.add_space(5.0);
-                let oriented = if selected_edge.oriented {
-                    "Oriented"
-                } else {
-                    "Unoriented"
-                };
-                ui.toggle_value(&mut selected_edge.oriented, oriented);
+                // loop direction is unnecessary
+                if selected_edge.start_id != selected_edge.end_id {
+                    ui.add_space(5.0);
+                    let oriented = if selected_edge.oriented {
+                        "Oriented"
+                    } else {
+                        "Unoriented"
+                    };
+                    ui.toggle_value(&mut selected_edge.oriented, oriented);
+                }
             });
 
             ui.separator();

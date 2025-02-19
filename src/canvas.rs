@@ -6,7 +6,7 @@ use eframe::{
         Rgba, RichText, Sense, Stroke, Ui, Vec2, WidgetText,
     },
     emath::Rot2,
-    epaint::{QuadraticBezierShape, TextShape},
+    epaint::{CubicBezierShape, QuadraticBezierShape, TextShape},
 };
 
 use crate::{
@@ -138,7 +138,7 @@ impl Canvas {
             let mouse_pos = self.response().interact_pointer_pos().unwrap();
 
             for (id, node) in graph.nodes() {
-                if *id != edge_start && node.position.distance(mouse_pos) < node.radius {
+                if node.position.distance(mouse_pos) < node.radius {
                     edge_end = Some(*id);
                     break;
                 }
@@ -170,10 +170,33 @@ impl Canvas {
         if let (Some(edge_start), Some(mouse_pos)) =
             (self.new_edge_start, self.response().hover_pos())
         {
-            self.painter().line_segment(
-                [graph.nodes()[&edge_start].position, mouse_pos],
-                Stroke::new(2.0, Color32::BLACK),
-            );
+            let start_node = &graph.nodes()[&edge_start];
+
+            if start_node.position.distance(mouse_pos) < start_node.radius {
+                // draw loop
+                let start_pos = start_node.position - Vec2::new(0.0, start_node.radius);
+                let end_pos = start_node.position - Vec2::new(start_node.radius, 0.0);
+
+                let control1 = start_pos - Vec2::new(0.0, CONTROL_OFFSET);
+                let control2 = end_pos - Vec2::new(CONTROL_OFFSET, 0.0);
+
+                self.painter()
+                    .circle(start_pos, 1.0, Color32::RED, Stroke::NONE);
+                self.painter()
+                    .circle(end_pos, 1.0, Color32::GREEN, Stroke::NONE);
+
+                self.painter().add(CubicBezierShape::from_points_stroke(
+                    [start_pos, control1, control2, end_pos],
+                    false,
+                    Color32::TRANSPARENT,
+                    Stroke::new(2.0, Color32::BLACK),
+                ));
+            } else {
+                self.painter().line_segment(
+                    [start_node.position, mouse_pos],
+                    Stroke::new(2.0, Color32::BLACK),
+                );
+            }
         }
     }
 
@@ -238,6 +261,30 @@ impl Canvas {
         center_pos + rotated
     }
 
+    fn draw_loop(&self, ui: &mut Ui, graph: &Graph, edge: &Edge, shift: f32) {
+        let node = &graph.nodes()[&edge.start_id];
+
+        let start = node.position - Vec2::new(0.0, node.radius);
+        let end = node.position - Vec2::new(node.radius, 0.0);
+
+        let offset = CONTROL_OFFSET * (node.radius / 20.0) * (1.0 + shift);
+        let control1 = start - Vec2::new(0.0, offset);
+        let control2 = end - Vec2::new(offset, 0.0);
+
+        let curve = CubicBezierShape::from_points_stroke(
+            [start, control1, control2, end],
+            false,
+            Color32::TRANSPARENT,
+            Stroke::new(edge.width, edge.color),
+        );
+        let curve_control = curve.sample(0.5);
+        self.painter().add(curve);
+
+        if !edge.label.is_empty() {
+            self.draw_edge_label(ui, edge, start, curve_control, end);
+        }
+    }
+
     fn draw_edge(&self, ui: &mut Ui, graph: &Graph, edge: &Edge, shift: f32) {
         let d = if edge.start_id < edge.end_id {
             -1.0
@@ -292,13 +339,20 @@ impl Canvas {
                 .or_insert(vec![edge]);
         }
 
-        for edges in grouped_edges.values() {
-            let edges_number = (edges.len() / 2) as isize;
-            let shifting =
-                (-edges_number..=edges_number).filter(|&n| edges.len() % 2 != 0 || n != 0);
+        for ((start_id, end_id), edges) in grouped_edges {
+            if start_id == end_id {
+                // iterate over loops
+                for (index, &edge) in edges.iter().enumerate() {
+                    self.draw_loop(ui, &graph, edge, index as f32);
+                }
+            } else {
+                let edges_number = (edges.len() / 2) as isize;
+                let shifting =
+                    (-edges_number..=edges_number).filter(|&n| edges.len() % 2 != 0 || n != 0);
 
-            for (&edge, shift) in edges.iter().zip(shifting) {
-                self.draw_edge(ui, graph, edge, shift as f32);
+                for (&edge, shift) in edges.iter().zip(shifting) {
+                    self.draw_edge(ui, graph, edge, shift as f32);
+                }
             }
         }
     }
