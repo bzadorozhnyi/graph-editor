@@ -10,6 +10,7 @@ use eframe::{
 };
 
 use crate::{
+    comment_line::{group::CommentsGroup, CommentLine},
     consts::{ARROW_HALF_ANGLE, ARROW_LEN, CONTROL_OFFSET, DELTA_ANGLE},
     graph::{Edge, Graph, Node, NodeId},
 };
@@ -19,6 +20,8 @@ pub struct Canvas {
     painter: Option<Painter>,
     painter_area: Rect,
     new_edge_start: Option<NodeId>,
+    comment_lines: CommentsGroup,
+    erase_line_start: Option<Pos2>,
 }
 
 impl Canvas {
@@ -28,12 +31,20 @@ impl Canvas {
             painter: None,
             painter_area: Rect::ZERO,
             new_edge_start: None,
+            comment_lines: CommentsGroup::new(),
+            erase_line_start: None,
         }
     }
 
     fn response(&self) -> &Response {
         self.response
             .as_ref()
+            .expect("Canvas::setup() must be called first!")
+    }
+
+    fn response_mut(&mut self) -> &mut Response {
+        self.response
+            .as_mut()
             .expect("Canvas::setup() must be called first!")
     }
 
@@ -376,5 +387,108 @@ impl Canvas {
         for node in graph.nodes().values() {
             self.draw_node(node);
         }
+    }
+
+    pub fn handle_comment_draw(&mut self, selected_color: Rgba, selected_width: f32) {
+        if self.comment_lines.is_empty() {
+            self.comment_lines
+                .insert(CommentLine::from(selected_color, selected_width));
+        }
+
+        let pointer_pos = self.response().interact_pointer_pos();
+
+        let current_line = self.comment_lines.last_added_mut().unwrap();
+        // update selected params
+        if current_line.is_empty() {
+            current_line.color = selected_color;
+            current_line.width = selected_width;
+        }
+
+        if let Some(pointer_pos) = pointer_pos {
+            if current_line.points.last() != Some(&pointer_pos) {
+                current_line.points.push(pointer_pos);
+                self.response_mut().mark_changed();
+            }
+        } else if !current_line.is_empty() {
+            self.comment_lines.insert(CommentLine::new());
+            self.response_mut().mark_changed();
+        }
+    }
+
+    fn orientation(&self, a: Pos2, b: Pos2, c: Pos2) -> i32 {
+        let value = (b.y - a.y) * (c.x - a.x) - (b.x - a.x) * (c.y - b.y);
+        value.signum() as i32
+    }
+
+    fn on_segment(&self, a: Pos2, b: Pos2, c: Pos2) -> bool {
+        b.x >= a.x.min(c.x) && b.x <= a.x.max(c.x) && b.y >= a.y.min(c.y) && b.y <= a.y.max(c.y)
+    }
+
+    fn segments_intersect(&self, a: Pos2, b: Pos2, c: Pos2, d: Pos2) -> bool {
+        let o1 = self.orientation(a, b, c);
+        let o2 = self.orientation(a, b, d);
+        let o3 = self.orientation(c, d, a);
+        let o4 = self.orientation(c, d, b);
+
+        if o1 != o2 && o3 != o4 {
+            return true;
+        }
+
+        (o1 == 0 && self.on_segment(a, c, b))
+            || (o2 == 0 && self.on_segment(a, d, b))
+            || (o3 == 0 && self.on_segment(c, a, d))
+            || (o4 == 0 && self.on_segment(c, b, d))
+    }
+
+    fn is_intersect(&self, comment_line: &CommentLine, erase_line: &[Pos2; 2]) -> bool {
+        let c = erase_line[0];
+        let d = erase_line[1];
+
+        for pair in comment_line.points.windows(2) {
+            let a = pair[0];
+            let b = pair[1];
+
+            if self.segments_intersect(a, b, c, d) {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    pub fn handle_comment_erase(&mut self) {
+        if let Some(pointer_pos) = self.response().interact_pointer_pos() {
+            if self.erase_line_start.is_none() {
+                self.erase_line_start = Some(pointer_pos);
+            }
+
+            let mut selected_line_id = None;
+            for (id, line) in self.comment_lines.iter() {
+                if self.is_intersect(line, &[self.erase_line_start.unwrap(), pointer_pos]) {
+                    selected_line_id = Some(id);
+                    break;
+                }
+            }
+
+            if let Some(id) = selected_line_id {
+                self.comment_lines.remove(*id);
+            }
+
+            self.erase_line_start = Some(pointer_pos);
+        } else {
+            self.erase_line_start = None;
+        }
+    }
+
+    pub fn draw_comment_lines(&self) {
+        let lines = self
+            .comment_lines
+            .iter()
+            .filter(|(_, line)| line.len() >= 2)
+            .map(|(_, line)| {
+                egui::Shape::line(line.points.clone(), Stroke::new(line.width, line.color))
+            });
+
+        self.painter().extend(lines);
     }
 }
