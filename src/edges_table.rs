@@ -1,4 +1,4 @@
-use eframe::egui;
+use eframe::egui::{self, frame, Margin};
 use egui_extras::{Column, TableBuilder};
 
 use crate::graph::{edge::EdgeId, Graph};
@@ -72,7 +72,13 @@ impl EdgesTable {
                         ui.label(&graph.nodes()[&graph.edges()[&edge_id].end_id].label);
                     });
                     row.col(|ui| {
-                        ui.label(&graph.edges().get(edge_id).unwrap().label);
+                        frame::Frame::default()
+                            .inner_margin(Margin::symmetric(2.0, 0.0))
+                            .show(ui, |ui| {
+                                ui.text_edit_singleline(
+                                    &mut graph.edge_mut(edge_id).unwrap().label,
+                                );
+                            });
                     });
 
                     self.toggle_row_selection(edge_id, &row.response(), graph);
