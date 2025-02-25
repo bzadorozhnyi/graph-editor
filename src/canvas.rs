@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use eframe::{
     egui::{
         self, Align2, Color32, FontFamily, FontId, FontSelection, Painter, Pos2, Rect, Response,
-        Rgba, RichText, Sense, Stroke, Ui, Vec2, WidgetText,
+        Rgba, RichText, Sense, Shape, Stroke, Ui, Vec2, WidgetText,
     },
     emath::Rot2,
     epaint::{CubicBezierShape, QuadraticBezierShape, TextShape},
@@ -11,7 +11,7 @@ use eframe::{
 
 use crate::{
     comment_line::{group::CommentsGroup, CommentLine},
-    consts::{ARROW_HALF_ANGLE, ARROW_LEN, CONTROL_OFFSET, DELTA_ANGLE},
+    consts::{ARROW_HALF_ANGLE, ARROW_LEN_COEF, CONTROL_OFFSET, DELTA_ANGLE},
     graph::{Edge, Graph, Node, NodeId},
 };
 
@@ -247,13 +247,14 @@ impl Canvas {
         let direction = (end - start).normalized();
         let rotation = Rot2::from_angle(ARROW_HALF_ANGLE);
 
-        let arrow_left = end - ARROW_LEN * (rotation * direction);
-        let arrow_right = end - ARROW_LEN * (rotation.inverse() * direction);
+        let arrow_left = end - ARROW_LEN_COEF * width * (rotation * direction);
+        let arrow_right = end - ARROW_LEN_COEF * width * (rotation.inverse() * direction);
 
-        for arrow in [arrow_left, arrow_right] {
-            self.painter()
-                .line_segment([end, arrow], Stroke::new(width, color));
-        }
+        self.painter().add(Shape::convex_polygon(
+            vec![end - 0.6 * width * direction, arrow_left, arrow_right],
+            color,
+            Stroke::new(width, color),
+        ));
     }
 
     /// Rotate point on circle border (`border_pos`)
