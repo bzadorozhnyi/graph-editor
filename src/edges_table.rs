@@ -14,22 +14,18 @@ impl EdgesTable {
         "Edges Table"
     }
 
-    pub fn show(&mut self, ctx: &eframe::egui::Context, open: &mut bool, graph: &mut Graph) {
-        egui::Window::new(self.name())
-            .open(open)
-            .collapsible(false)
-            .show(ctx, |ui| {
-                self.ui(ui, graph);
-            });
-    }
+    pub fn ui(&mut self, ui: &mut egui::Ui, graph: &mut Graph) {
+        // ui.add_space(10.0);
+        // ui.separator();
+        let width = (ui.available_width() - 30.0).max(0.0) / 3.0;
 
-    fn ui(&mut self, ui: &mut egui::Ui, graph: &mut Graph) {
         let table = TableBuilder::new(ui)
+            .min_scrolled_height(100.0)
             .cell_layout(egui::Layout::top_down(egui::Align::Center))
             .column(Column::auto())
-            .column(Column::remainder().resizable(true))
-            .column(Column::remainder().resizable(true))
-            .column(Column::remainder().resizable(true))
+            .column(Column::auto().at_least(width).at_most(width).clip(true))
+            .column(Column::auto().at_least(width).at_most(width).clip(true))
+            .column(Column::auto().at_least(width).at_most(width).clip(true))
             .sense(egui::Sense::click());
 
         table
@@ -66,10 +62,7 @@ impl EdgesTable {
                         let selected_edge = graph.edges().get(edge_id).unwrap();
 
                         if selected_edge.start_id != selected_edge.end_id {
-                            ui.checkbox(
-                                &mut graph.edge_mut(edge_id).unwrap().oriented,
-                                "",
-                            );
+                            ui.checkbox(&mut graph.edge_mut(edge_id).unwrap().oriented, "");
                         }
                     });
                     row.col(|ui| {

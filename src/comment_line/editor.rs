@@ -19,16 +19,7 @@ impl CommentsEditor {
         "Comments Editor"
     }
 
-    pub fn show(&mut self, ctx: &eframe::egui::Context, open: &mut bool) {
-        egui::Window::new("Comments")
-            .open(open)
-            .collapsible(false)
-            .show(ctx, |ui| {
-                self.ui(ui);
-            });
-    }
-
-    fn ui(&mut self, ui: &mut egui::Ui) {
+    pub fn ui(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             if ui.toggle_value(&mut self.draw_active, "✏").clicked() {
                 if self.draw_active && self.erase_active {

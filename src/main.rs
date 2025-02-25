@@ -1,4 +1,4 @@
-use eframe::egui::{self};
+use eframe::egui::{self, Margin, SidePanel};
 use graph_editor_egui::{
     canvas::Canvas,
     comment_line::editor::CommentsEditor,
@@ -18,17 +18,21 @@ fn main() -> eframe::Result {
     )
 }
 
+#[derive(PartialEq)]
+enum Editor {
+    Node,
+    Edge,
+    CommentLine,
+}
+
 struct MyApp {
     graph: Graph,
     canvas: Canvas,
     node_editor: NodeEditor,
-    node_editor_open: bool,
     edges_table: EdgesTable,
-    edges_table_open: bool,
     edge_editor: EdgeEditor,
-    edge_editor_open: bool,
     comments_editor: CommentsEditor,
-    comments_editor_open: bool,
+    selected_editor: Editor,
 }
 
 impl Default for MyApp {
@@ -37,13 +41,10 @@ impl Default for MyApp {
             graph: Graph::new(),
             canvas: Canvas::new(),
             node_editor: NodeEditor::new(),
-            node_editor_open: false,
             edges_table: EdgesTable::new(),
-            edges_table_open: false,
             edge_editor: EdgeEditor::new(),
-            edge_editor_open: false,
             comments_editor: CommentsEditor::new(),
-            comments_editor_open: false,
+            selected_editor: Editor::Node,
         }
     }
 }
@@ -51,21 +52,61 @@ impl Default for MyApp {
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &eframe::egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            egui::menu::bar(ui, |ui| {
-                if ui.button("New").clicked() {
-                    self.graph.add_node(Node::new());
+            let right_panel_width = 250.0;
+            egui::Frame::none()
+                .inner_margin(Margin::symmetric(8.0, 0.0))
+                .show(ui, |ui| {
+                    egui::menu::bar(ui, |ui| {
+                        if ui.button("New").clicked() {
+                            self.graph.add_node(Node::new());
+                        }
+                        ui.selectable_value(&mut self.selected_editor, Editor::Node, "Node");
+                        ui.selectable_value(&mut self.selected_editor, Editor::Edge, "Edge");
+                        ui.selectable_value(
+                            &mut self.selected_editor,
+                            Editor::CommentLine,
+                            "Comment line",
+                        );
+                    });
+                });
+
+            SidePanel::right("menu_panel")
+                .exact_width(right_panel_width)
+                .show(ctx, |ui| {
+                    egui::Frame::none()
+                        .inner_margin(Margin::same(4.0))
+                        .show(ui, |ui| match self.selected_editor {
+                            Editor::Node => {
+                                self.node_editor.ui(ui, &mut self.graph);
+                            }
+                            Editor::Edge => {
+                                self.edge_editor.ui(ui, &mut self.graph);
+                            }
+                            Editor::CommentLine => {
+                                self.comments_editor.ui(ui);
+                            }
+                        });
+                });
+
+            egui::TopBottomPanel::bottom("bottom_panel")
+                .resizable(true)
+                .min_height(10.0)
+                .show_separator_line(true)
+                .show(ctx, |ui| {
+                    self.edges_table.ui(ui, &mut self.graph);
+                });
+
+            self.canvas.setup(ctx, ui);
+
+            if self.selected_editor == Editor::CommentLine {
+                if self.comments_editor.draw_mode_active() {
+                    self.canvas
+                        .handle_comment_draw(self.comments_editor.selected_stroke());
                 }
-                ui.toggle_value(&mut self.node_editor_open, "Node Editor");
-                ui.toggle_value(&mut self.edges_table_open, "Edges Table");
-                ui.toggle_value(&mut self.edge_editor_open, "Edge Editor");
-                ui.toggle_value(&mut self.comments_editor_open, "Comments Editor");
-            });
-
-            self.canvas.setup(ui);
-
-            if !self.comments_editor.draw_mode_active()
-                && !self.comments_editor.erase_mode_active()
-            {
+                if self.comments_editor.erase_mode_active() {
+                    self.canvas.handle_comment_erase();
+                }
+            } else {
                 self.canvas.handle_draging(&mut self.graph);
                 self.canvas.handle_node_selection(&mut self.graph);
 
@@ -74,26 +115,6 @@ impl eframe::App for MyApp {
                 if !edge_created {
                     self.canvas.handle_setting_edge_start(&self.graph);
                 }
-            }
-
-            self.node_editor
-                .show(ctx, &mut self.node_editor_open, &mut self.graph);
-
-            self.edges_table
-                .show(ctx, &mut self.edges_table_open, &mut self.graph);
-
-            self.edge_editor
-                .show(ctx, &mut self.edge_editor_open, &mut self.graph);
-
-            self.comments_editor
-                .show(ctx, &mut self.comments_editor_open);
-
-            if self.comments_editor.draw_mode_active() {
-                self.canvas.handle_comment_draw(self.comments_editor.selected_stroke());
-            }
-
-            if self.comments_editor.erase_mode_active() {
-                self.canvas.handle_comment_erase();
             }
 
             self.canvas.draw_comment_lines();

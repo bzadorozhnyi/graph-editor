@@ -15,15 +15,6 @@ impl EdgeEditor {
         "Edge Editor"
     }
 
-    pub fn show(&mut self, ctx: &eframe::egui::Context, open: &mut bool, graph: &mut Graph) {
-        egui::Window::new("Edge")
-            .open(open)
-            .collapsible(false)
-            .show(ctx, |ui| {
-                self.ui(ui, graph);
-            });
-    }
-
     pub fn ui(&mut self, ui: &mut egui::Ui, graph: &mut Graph) {
         if graph.selected_edge_id().is_none() {
             ui.label("No edge selected");
@@ -75,40 +66,46 @@ impl EdgeEditor {
 
                 ui.add_space(5.0);
 
-                ui.horizontal(|ui| {
-                    ui.add(
-                        DragValue::new(&mut selected_edge.label_size)
-                            .range(10.0..=36.0)
-                            .speed(0.2)
-                            .prefix("Size: "),
-                    );
-                    if ui.button("⟲").clicked() {
-                        selected_edge.label_size = 10.0;
-                    }
+                ui.vertical(|ui| {
+                    ui.horizontal(|ui| {
+                        ui.add(
+                            DragValue::new(&mut selected_edge.label_size)
+                                .range(10.0..=36.0)
+                                .speed(0.2)
+                                .prefix("Size: "),
+                        );
+                        if ui.button("⟲").clicked() {
+                            selected_edge.label_size = 10.0;
+                        }
+                    });
 
                     ui.add_space(5.0);
 
-                    ui.add(
-                        DragValue::new(&mut selected_edge.padding_x)
-                            .range(-100.0..=100.0)
-                            .speed(1.0)
-                            .prefix("X: "),
-                    );
-                    if ui.button("⟲").clicked() {
-                        selected_edge.padding_x = 0.0;
-                    }
+                    ui.horizontal(|ui| {
+                        ui.add(
+                            DragValue::new(&mut selected_edge.padding_x)
+                                .range(-100.0..=100.0)
+                                .speed(1.0)
+                                .prefix("X: "),
+                        );
+                        if ui.button("⟲").clicked() {
+                            selected_edge.padding_x = 0.0;
+                        }
+                    });
 
                     ui.add_space(5.0);
 
-                    ui.add(
-                        DragValue::new(&mut selected_edge.padding_y)
-                            .range(-100.0..=100.0)
-                            .speed(1.0)
-                            .prefix("Y: "),
-                    );
-                    if ui.button("⟲").clicked() {
-                        selected_edge.padding_y = 0.0;
-                    }
+                    ui.horizontal(|ui| {
+                        ui.add(
+                            DragValue::new(&mut selected_edge.padding_y)
+                                .range(-100.0..=100.0)
+                                .speed(1.0)
+                                .prefix("Y: "),
+                        );
+                        if ui.button("⟲").clicked() {
+                            selected_edge.padding_y = 0.0;
+                        }
+                    });
                 });
             });
 

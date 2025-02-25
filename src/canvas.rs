@@ -48,8 +48,8 @@ impl Canvas {
             .expect("Canvas::setup() must be called first!")
     }
 
-    pub fn setup(&mut self, ui: &mut Ui) {
-        let rect = ui.available_rect_before_wrap();
+    pub fn setup(&mut self, ctx: &eframe::egui::Context, ui: &mut Ui) {
+        let rect = ctx.available_rect().shrink(16.0);
 
         self.painter_area = rect;
         let size = self.painter_area.size();

@@ -15,16 +15,7 @@ impl NodeEditor {
         "Node Editor"
     }
 
-    pub fn show(&mut self, ctx: &eframe::egui::Context, open: &mut bool, graph: &mut Graph) {
-        egui::Window::new("Node")
-            .open(open)
-            .collapsible(false)
-            .show(ctx, |ui| {
-                self.ui(ui, graph);
-            });
-    }
-
-    fn ui(&mut self, ui: &mut egui::Ui, graph: &mut Graph) {
+    pub fn ui(&mut self, ui: &mut egui::Ui, graph: &mut Graph) {
         if let Some(selected_node) = graph.selected_node_mut() {
             ui.vertical(|ui| {
                 ui.horizontal(|ui| {
