@@ -42,12 +42,6 @@ impl Canvas {
             .expect("Canvas::setup() must be called first!")
     }
 
-    fn response_mut(&mut self) -> &mut Response {
-        self.response
-            .as_mut()
-            .expect("Canvas::setup() must be called first!")
-    }
-
     fn painter(&self) -> &Painter {
         self.painter
             .as_ref()
@@ -389,10 +383,9 @@ impl Canvas {
         }
     }
 
-    pub fn handle_comment_draw(&mut self, selected_color: Rgba, selected_width: f32) {
+    pub fn handle_comment_draw(&mut self, stroke: Stroke) {
         if self.comment_lines.is_empty() {
-            self.comment_lines
-                .insert(CommentLine::from(selected_color, selected_width));
+            self.comment_lines.insert(CommentLine::from(stroke));
         }
 
         let pointer_pos = self.response().interact_pointer_pos();
@@ -400,18 +393,15 @@ impl Canvas {
         let current_line = self.comment_lines.last_added_mut().unwrap();
         // update selected params
         if current_line.is_empty() {
-            current_line.color = selected_color;
-            current_line.width = selected_width;
+            current_line.stroke = stroke;
         }
 
         if let Some(pointer_pos) = pointer_pos {
             if current_line.points.last() != Some(&pointer_pos) {
                 current_line.points.push(pointer_pos);
-                self.response_mut().mark_changed();
             }
         } else if !current_line.is_empty() {
             self.comment_lines.insert(CommentLine::new());
-            self.response_mut().mark_changed();
         }
     }
 
@@ -485,9 +475,7 @@ impl Canvas {
             .comment_lines
             .iter()
             .filter(|(_, line)| line.len() >= 2)
-            .map(|(_, line)| {
-                egui::Shape::line(line.points.clone(), Stroke::new(line.width, line.color))
-            });
+            .map(|(_, line)| egui::Shape::line(line.points.clone(), line.stroke));
 
         self.painter().extend(lines);
     }

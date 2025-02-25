@@ -1,12 +1,9 @@
-use eframe::egui::{
-    self, color_picker::color_edit_button_rgba, Color32, DragValue, Rgba,
-};
+use eframe::egui::{self, Color32, Rgba, Stroke};
 
 pub struct CommentsEditor {
     draw_active: bool,
     erase_active: bool,
-    selected_color: Rgba,
-    selected_width: f32,
+    stroke: Stroke,
 }
 
 impl CommentsEditor {
@@ -14,8 +11,7 @@ impl CommentsEditor {
         Self {
             draw_active: false,
             erase_active: false,
-            selected_color: Rgba::from(Color32::BLACK),
-            selected_width: 2.0,
+            stroke: Stroke::new(1.0, Rgba::from(Color32::BLACK)),
         }
     }
 
@@ -42,23 +38,7 @@ impl CommentsEditor {
 
             ui.add_space(5.0);
 
-            ui.add(
-                DragValue::new(&mut self.selected_width)
-                    .range(1.0..=5.0)
-                    .speed(0.2)
-                    .prefix("Width: "),
-            );
-
-            ui.add_space(5.0);
-
-            color_edit_button_rgba(
-                ui,
-                &mut self.selected_color,
-                egui::color_picker::Alpha::Opaque,
-            );
-            ui.label("Color");
-
-            ui.add_space(5.0);
+            ui.add(&mut self.stroke);
 
             if ui.toggle_value(&mut self.erase_active, "🗑").clicked() {
                 if self.draw_active && self.erase_active {
@@ -76,7 +56,7 @@ impl CommentsEditor {
         self.erase_active
     }
 
-    pub fn stroke_params(&self) -> (Rgba, f32) {
-        (self.selected_color, self.selected_width)
+    pub fn selected_stroke(&self) -> Stroke {
+        self.stroke
     }
 }

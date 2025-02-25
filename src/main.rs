@@ -89,8 +89,7 @@ impl eframe::App for MyApp {
                 .show(ctx, &mut self.comments_editor_open);
 
             if self.comments_editor.draw_mode_active() {
-                let (color, width) = self.comments_editor.stroke_params();
-                self.canvas.handle_comment_draw(color, width);
+                self.canvas.handle_comment_draw(self.comments_editor.selected_stroke());
             }
 
             if self.comments_editor.erase_mode_active() {

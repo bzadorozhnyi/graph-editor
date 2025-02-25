@@ -1,4 +1,4 @@
-use eframe::egui::{Color32, Pos2, Rgba};
+use eframe::egui::{Color32, Pos2, Rgba, Stroke};
 
 pub mod editor;
 pub mod group;
@@ -6,24 +6,21 @@ pub mod group;
 #[derive(Debug)]
 pub struct CommentLine {
     pub points: Vec<Pos2>,
-    pub color: Rgba,
-    pub width: f32,
+    pub stroke: Stroke
 }
 
 impl CommentLine {
     pub fn new() -> Self {
         Self {
             points: vec![],
-            color: Rgba::from(Color32::BLACK),
-            width: 2.0,
+            stroke: Stroke::new(1.0, Rgba::from(Color32::BLACK))
         }
     }
 
-    pub fn from(color: Rgba, width: f32) -> Self {
+    pub fn from(stroke: Stroke) -> Self {
         Self {
             points: vec![],
-            color,
-            width,
+            stroke
         }
     }
 
