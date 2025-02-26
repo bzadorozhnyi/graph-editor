@@ -185,11 +185,6 @@ impl Canvas {
                 let control1 = start_pos - Vec2::new(0.0, CONTROL_OFFSET);
                 let control2 = end_pos - Vec2::new(CONTROL_OFFSET, 0.0);
 
-                self.painter()
-                    .circle(start_pos, 1.0, Color32::RED, Stroke::NONE);
-                self.painter()
-                    .circle(end_pos, 1.0, Color32::GREEN, Stroke::NONE);
-
                 self.painter().add(CubicBezierShape::from_points_stroke(
                     [start_pos, control1, control2, end_pos],
                     false,
