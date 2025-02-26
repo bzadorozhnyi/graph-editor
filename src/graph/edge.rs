@@ -34,9 +34,7 @@ impl Edge {
             loop_rotation_angle: 0.0
         }
     }
-}
 
-impl Edge {
     pub fn is_loop(&self) -> bool {
         self.start_id == self.end_id
     }
