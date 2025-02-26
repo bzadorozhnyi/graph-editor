@@ -120,10 +120,10 @@ impl eframe::App for MyApp {
                 }
             }
 
-            self.canvas.draw_comment_lines();
             self.canvas.draw_possible_edge(&self.graph);
             self.canvas.draw_edges(ui, &self.graph);
             self.canvas.draw_nodes(&self.graph);
+            self.canvas.draw_comment_lines();
         });
     }
 }
