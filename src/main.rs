@@ -9,7 +9,10 @@ use graph_editor_egui::{
 };
 
 fn main() -> eframe::Result {
-    let native_options = eframe::NativeOptions::default();
+    let native_options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default().with_inner_size([1200.0, 675.0]),
+        ..Default::default()
+    };
 
     eframe::run_native(
         "Graph editor",
