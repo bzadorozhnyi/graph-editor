@@ -35,3 +35,9 @@ impl Edge {
         }
     }
 }
+
+impl Edge {
+    pub fn is_loop(&self) -> bool {
+        self.start_id == self.end_id
+    }
+}

@@ -266,7 +266,7 @@ impl Canvas {
         let mut start = node.position - Vec2::new(0.0, node.radius);
         let mut end = node.position - Vec2::new(node.radius, 0.0);
 
-        if edge.start_id == edge.end_id {
+        if edge.is_loop() {
             let rotation_angle = edge.loop_rotation_angle.to_radians();
 
             start = self.rotate_border_point(start, node.position, rotation_angle);

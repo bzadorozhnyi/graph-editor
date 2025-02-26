@@ -61,7 +61,7 @@ impl EdgesTable {
                     row.col(|ui| {
                         let selected_edge = graph.edges().get(edge_id).unwrap();
 
-                        if selected_edge.start_id != selected_edge.end_id {
+                        if !selected_edge.is_loop() {
                             ui.checkbox(&mut graph.edge_mut(edge_id).unwrap().oriented, "");
                         }
                     });

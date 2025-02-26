@@ -52,7 +52,7 @@ impl EdgeEditor {
                 );
 
                 // loop direction is unnecessary
-                if selected_edge.start_id != selected_edge.end_id {
+                if !selected_edge.is_loop() {
                     ui.add_space(5.0);
                     let oriented = if selected_edge.oriented {
                         "Oriented"
@@ -63,7 +63,7 @@ impl EdgeEditor {
                 }
             });
 
-            if selected_edge.start_id == selected_edge.end_id {
+            if selected_edge.is_loop() {
                 ui.separator();
                 ui.add(
                     DragValue::new(&mut selected_edge.loop_rotation_angle)
