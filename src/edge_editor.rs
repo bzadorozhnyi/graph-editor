@@ -63,6 +63,17 @@ impl EdgeEditor {
                 }
             });
 
+            if selected_edge.start_id == selected_edge.end_id {
+                ui.separator();
+                ui.add(
+                    DragValue::new(&mut selected_edge.loop_rotation_angle)
+                        .range(0.0..=360.0)
+                        .speed(1)
+                        .prefix("Loop rot. angle: ")
+                        .suffix("°"),
+                );
+            }
+
             ui.separator();
             ui.vertical(|ui| {
                 ui.horizontal(|ui| {

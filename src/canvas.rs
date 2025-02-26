@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use eframe::{
     egui::{
-        self, Align2, Color32, FontFamily, FontId, FontSelection, Painter, Pos2, Rect,
-        Response, Rgba, RichText, Sense, Shape, Stroke, Ui, Vec2, WidgetText,
+        self, Align2, Color32, FontFamily, FontId, FontSelection, Painter, Pos2, Rect, Response,
+        Rgba, RichText, Sense, Shape, Stroke, Ui, Vec2, WidgetText,
     },
     emath::Rot2,
     epaint::{CubicBezierShape, QuadraticBezierShape, TextShape},
@@ -263,12 +263,22 @@ impl Canvas {
     fn draw_loop(&self, ui: &mut Ui, graph: &Graph, edge: &Edge, shift: f32) {
         let node = &graph.nodes()[&edge.start_id];
 
-        let start = node.position - Vec2::new(0.0, node.radius);
-        let end = node.position - Vec2::new(node.radius, 0.0);
+        let mut start = node.position - Vec2::new(0.0, node.radius);
+        let mut end = node.position - Vec2::new(node.radius, 0.0);
+
+        if edge.start_id == edge.end_id {
+            let rotation_angle = edge.loop_rotation_angle.to_radians();
+
+            start = self.rotate_border_point(start, node.position, rotation_angle);
+            end = self.rotate_border_point(end, node.position, rotation_angle);
+        }
+
+        let direction1 = (node.position - start).normalized();
+        let direction2 = (node.position - end).normalized();
 
         let offset = CONTROL_OFFSET * (node.radius / 20.0) * (1.0 + shift);
-        let control1 = start - Vec2::new(0.0, offset);
-        let control2 = end - Vec2::new(offset, 0.0);
+        let control1 = start - direction1 * offset;
+        let control2 = end - direction2 * offset;
 
         let curve = CubicBezierShape::from_points_stroke(
             [start, control1, control2, end],
@@ -492,7 +502,7 @@ impl Canvas {
                     break;
                 }
             }
-            
+
             if let Some(id) = selected_line_id {
                 self.comment_lines.remove(*id);
             }
