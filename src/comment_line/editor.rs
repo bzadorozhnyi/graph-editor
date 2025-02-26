@@ -1,4 +1,4 @@
-use eframe::egui::{self, Color32, Rgba, Stroke};
+use eframe::egui::{self, Color32, Rgba, RichText, Stroke};
 
 pub struct CommentsEditor {
     draw_active: bool,
@@ -20,6 +20,12 @@ impl CommentsEditor {
     }
 
     pub fn ui(&mut self, ui: &mut egui::Ui) {
+        ui.vertical_centered(|ui| {
+            ui.label(RichText::new(self.name()).size(24.0));
+        });
+
+        ui.separator();
+
         ui.horizontal(|ui| {
             if ui.toggle_value(&mut self.draw_active, "✏").clicked() {
                 if self.draw_active && self.erase_active {

@@ -16,6 +16,12 @@ impl EdgeEditor {
     }
 
     pub fn ui(&mut self, ui: &mut egui::Ui, graph: &mut Graph) {
+        ui.vertical_centered(|ui| {
+            ui.label(RichText::new(self.name()).size(24.0));
+        });
+
+        ui.separator();
+
         if graph.selected_edge_id().is_none() {
             ui.label("No edge selected");
         } else {

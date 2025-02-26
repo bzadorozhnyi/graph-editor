@@ -16,13 +16,13 @@ impl NodeEditor {
     }
 
     pub fn ui(&mut self, ui: &mut egui::Ui, graph: &mut Graph) {
+        ui.vertical_centered(|ui| {
+            ui.label(RichText::new(self.name()).size(24.0));
+        });
+
+        ui.separator();
+
         if let Some(selected_node) = graph.selected_node_mut() {
-            ui.vertical_centered(|ui| {
-                ui.label(RichText::new(self.name()).size(24.0));
-            });
-
-            ui.separator();
-
             ui.horizontal(|ui| {
                 color_edit_button_rgba(
                     ui,
