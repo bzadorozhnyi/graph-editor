@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use eframe::{
     egui::{
-        self, Align2, Color32, FontFamily, FontId, FontSelection, Painter, Pos2, Rect, Response,
-        Rgba, RichText, Sense, Shape, Stroke, Ui, Vec2, WidgetText,
+        self, Align2, Color32, FontFamily, FontId, FontSelection, Painter, Pos2, Rect,
+        Response, Rgba, RichText, Sense, Shape, Stroke, Ui, Vec2, WidgetText,
     },
     emath::Rot2,
     epaint::{CubicBezierShape, QuadraticBezierShape, TextShape},
@@ -21,7 +21,6 @@ pub struct Canvas {
     painter_area: Rect,
     new_edge_start: Option<NodeId>,
     comment_lines: CommentsGroup,
-    erase_line_start: Option<Pos2>,
 }
 
 impl Canvas {
@@ -32,7 +31,6 @@ impl Canvas {
             painter_area: Rect::ZERO,
             new_edge_start: None,
             comment_lines: CommentsGroup::new(),
-            erase_line_start: None,
         }
     }
 
@@ -432,9 +430,9 @@ impl Canvas {
             || (o4 == 0 && self.on_segment(c, b, d))
     }
 
-    fn is_intersect(&self, comment_line: &CommentLine, erase_line: &[Pos2; 2]) -> bool {
-        let c = erase_line[0];
-        let d = erase_line[1];
+    fn is_intersect(&self, comment_line: &CommentLine, line: [Pos2; 2]) -> bool {
+        let c = line[0];
+        let d = line[1];
 
         for pair in comment_line.points.windows(2) {
             let a = pair[0];
@@ -448,27 +446,56 @@ impl Canvas {
         false
     }
 
-    pub fn handle_comment_erase(&mut self) {
-        if let Some(pointer_pos) = self.response().interact_pointer_pos() {
-            if self.erase_line_start.is_none() {
-                self.erase_line_start = Some(pointer_pos);
+    pub fn is_intersect_square(&self, comment_line: &CommentLine, square: Rect) -> bool {
+        for point in &comment_line.points {
+            if square.contains(*point) {
+                return true;
             }
+
+            if self.is_intersect(comment_line, [square.left_top(), square.right_top()])
+                || self.is_intersect(comment_line, [square.right_top(), square.right_bottom()])
+                || self.is_intersect(comment_line, [square.right_bottom(), square.left_bottom()])
+                || self.is_intersect(comment_line, [square.left_bottom(), square.left_top()])
+            {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    pub fn handle_comment_erase(&mut self) {
+        if self.response().hover_pos().is_none() {
+            return;
+        }
+
+        self.response()
+            .clone()
+            .on_hover_cursor(egui::CursorIcon::None);
+
+        let square_center = self.response().hover_pos().unwrap();
+        let square = Rect::from_center_size(square_center, Vec2::new(10.0, 10.0));
+
+        self.painter()
+            .rect_stroke(square, 0.0, Stroke::new(1.0, Color32::BLACK));
+
+        if let Some(pointer_pos) = self.response().interact_pointer_pos() {
+            let square = Rect::from_center_size(pointer_pos, Vec2::new(10.0, 10.0));
+
+            self.painter()
+                .rect_stroke(square, 0.0, Stroke::new(1.0, Color32::BLACK));
 
             let mut selected_line_id = None;
             for (id, line) in self.comment_lines.iter() {
-                if self.is_intersect(line, &[self.erase_line_start.unwrap(), pointer_pos]) {
+                if self.is_intersect_square(line, square) {
                     selected_line_id = Some(id);
                     break;
                 }
             }
-
+            
             if let Some(id) = selected_line_id {
                 self.comment_lines.remove(*id);
             }
-
-            self.erase_line_start = Some(pointer_pos);
-        } else {
-            self.erase_line_start = None;
         }
     }
 
