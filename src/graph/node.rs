@@ -9,6 +9,8 @@ pub struct Node {
     pub radius: f32,
     pub color: Rgba,
     pub label: String,
+    pub label_size_matches_node_size: bool,
+    pub label_size: f32,
 }
 
 impl Node {
@@ -18,6 +20,8 @@ impl Node {
             radius: 20.0,
             color: Rgba::from(Color32::RED),
             label: "1".to_string(),
+            label_size_matches_node_size: true,
+            label_size: 20.0,
         }
     }
 }

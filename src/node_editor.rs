@@ -17,6 +17,31 @@ impl NodeEditor {
 
     pub fn ui(&mut self, ui: &mut egui::Ui, graph: &mut Graph) {
         if let Some(selected_node) = graph.selected_node_mut() {
+            ui.vertical_centered(|ui| {
+                ui.label(RichText::new(self.name()).size(24.0));
+            });
+
+            ui.separator();
+
+            ui.horizontal(|ui| {
+                color_edit_button_rgba(
+                    ui,
+                    &mut selected_node.color,
+                    egui::color_picker::Alpha::Opaque,
+                );
+
+                ui.add_space(5.0);
+
+                ui.add(
+                    DragValue::new(&mut selected_node.radius)
+                        .range(10.0..=100.0)
+                        .speed(0.2)
+                        .prefix("Size: "),
+                );
+            });
+
+            ui.separator();
+
             ui.vertical(|ui| {
                 ui.horizontal(|ui| {
                     ui.label("Label: ");
@@ -25,21 +50,23 @@ impl NodeEditor {
 
                 ui.add_space(5.0);
 
-                ui.horizontal(|ui| {
-                    ui.add(
-                        DragValue::new(&mut selected_node.radius)
-                            .range(10.0..=100.0)
-                            .speed(0.2)
-                            .prefix("Size: "),
-                    );
+                ui.checkbox(
+                    &mut selected_node.label_size_matches_node_size,
+                    "Match node size",
+                );
 
-                    color_edit_button_rgba(
-                        ui,
-                        &mut selected_node.color,
-                        egui::color_picker::Alpha::Opaque,
-                    );
-                    ui.label("Color");
-                });
+                if selected_node.label_size_matches_node_size {
+                    ui.disable();
+                }
+
+                ui.add_space(5.0);
+
+                ui.add(
+                    DragValue::new(&mut selected_node.label_size)
+                        .range(20.0..=100.0)
+                        .speed(0.2)
+                        .prefix("Label size: "),
+                );
             });
 
             ui.separator();

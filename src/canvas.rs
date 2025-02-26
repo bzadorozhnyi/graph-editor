@@ -364,11 +364,17 @@ impl Canvas {
         self.painter()
             .circle(node.position, node.radius, node.color, Stroke::NONE);
 
+        let label_size = if node.label_size_matches_node_size {
+            node.radius
+        } else {
+            node.label_size
+        };
+
         self.painter().text(
             node.position,
             Align2::CENTER_CENTER,
-            node.label.clone(),
-            FontId::new(node.radius, FontFamily::Monospace),
+            &node.label,
+            FontId::new(label_size, FontFamily::Monospace),
             Color32::BLACK,
         );
     }
