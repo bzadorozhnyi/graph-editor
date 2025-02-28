@@ -111,15 +111,11 @@ impl Canvas {
 
     pub fn handle_node_selection(&mut self, graph: &mut Graph) {
         if let Some(mouse_pos) = self.response().interact_pointer_pos() {
-            let mut selected_node_id = None;
             for (id, node) in graph.nodes() {
                 if node.position.distance(mouse_pos) < node.radius {
-                    selected_node_id = Some(*id);
+                    graph.set_selected_node_id(Some(*id));
                     break;
                 }
-            }
-            if selected_node_id.is_some() {
-                graph.set_selected_node_id(selected_node_id);
             }
         }
     }
