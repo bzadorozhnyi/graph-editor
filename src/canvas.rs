@@ -150,8 +150,6 @@ impl Canvas {
 impl Canvas {
     /// Return true if edge was created
     pub fn handle_edge_creation(&mut self, graph: &mut Graph) -> bool {
-        let mut edge_created = false;
-
         // if Escape pressed => we dont' creating edge anymore
         if self
             .response()
@@ -167,24 +165,19 @@ impl Canvas {
         }
 
         if let Some(edge_start) = self.new_edge_start {
-            let mut edge_end = None;
             let mouse_pos = self.response().interact_pointer_pos().unwrap();
 
             for (id, node) in graph.nodes() {
                 if node.position.distance(mouse_pos) < node.radius {
-                    edge_end = Some(*id);
-                    break;
-                }
-            }
+                    graph.add_edge(Edge::new(edge_start, *id));
+                    self.new_edge_start = None;
 
-            if let Some(edge_end) = edge_end {
-                graph.add_edge(Edge::new(edge_start, edge_end));
-                self.new_edge_start = None;
-                edge_created = true;
+                    return true;
+                }
             }
         }
 
-        edge_created
+        false
     }
 
     pub fn handle_setting_edge_start(&mut self, graph: &Graph) {
