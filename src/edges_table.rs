@@ -15,8 +15,6 @@ impl EdgesTable {
     }
 
     pub fn ui(&mut self, ui: &mut egui::Ui, graph: &mut Graph) {
-        // ui.add_space(10.0);
-        // ui.separator();
         let width = (ui.available_width() - 30.0).max(0.0) / 3.0;
 
         let table = TableBuilder::new(ui)
