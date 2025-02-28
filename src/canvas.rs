@@ -332,12 +332,7 @@ impl Canvas {
         let start = self.rotate_border_point(start, node_start.position, DELTA_ANGLE * shift * d);
         let end = self.rotate_border_point(end, node_end.position, -DELTA_ANGLE * shift * d);
 
-        let direction = if edge.start_id < edge.end_id {
-            end - start
-        } else {
-            start - end
-        }
-        .normalized();
+        let direction = d * (start - end).normalized();
 
         let midpoint = Pos2::new((start.x + end.x) / 2.0, (start.y + end.y) / 2.0);
         let control = midpoint + direction.rot90() * shift * CONTROL_OFFSET;
