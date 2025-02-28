@@ -110,7 +110,7 @@ impl eframe::App for MyApp {
                     self.canvas.handle_comment_erase();
                 }
             } else {
-                self.canvas.handle_draging(&mut self.graph);
+                self.canvas.handle_node_draging(&mut self.graph);
                 self.canvas.handle_node_selection(&mut self.graph);
 
                 let edge_created = self.canvas.handle_edge_creation(&mut self.graph);

@@ -83,7 +83,7 @@ impl Canvas {
         Pos2::new(new_x, new_y)
     }
 
-    pub fn handle_draging(&mut self, graph: &mut Graph) {
+    pub fn handle_node_draging(&mut self, graph: &mut Graph) {
         if let Some(mouse_pos) = self.response().interact_pointer_pos() {
             self.response()
                 .ctx
