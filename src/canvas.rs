@@ -48,10 +48,9 @@ impl Canvas {
     }
 
     pub fn setup(&mut self, ctx: &eframe::egui::Context, ui: &mut Ui) {
-        let rect = ctx.available_rect().shrink(16.0);
-
-        self.painter_area = rect;
+        self.painter_area = ctx.available_rect().shrink(16.0);
         let size = self.painter_area.size();
+
         let (response, painter) = ui.allocate_painter(size, Sense::click_and_drag());
         painter.rect_filled(self.painter_area, 0.0, Color32::WHITE);
 
