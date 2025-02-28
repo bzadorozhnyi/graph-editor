@@ -92,19 +92,16 @@ impl Canvas {
 
             if let Some(id) = graph.dragging() {
                 let node = graph.nodes().get(&id).unwrap();
-                let corrected_pos = self.bounds_constraint_correction(node, mouse_pos);
-                graph.node_mut(&id).unwrap().position = corrected_pos;
-            } else {
-                let mut dragging = None;
-                for (id, node) in graph.nodes().iter() {
-                    if node.position.distance(mouse_pos) < node.radius {
-                        dragging = Some(*id);
-                        break;
-                    }
-                }
+                graph.node_mut(&id).unwrap().position =
+                    self.bounds_constraint_correction(node, mouse_pos);
 
-                if dragging.is_some() {
-                    graph.set_dragging(dragging);
+                return;
+            }
+
+            for (id, node) in graph.nodes().iter() {
+                if node.position.distance(mouse_pos) < node.radius {
+                    graph.set_dragging(Some(*id));
+                    break;
                 }
             }
         } else {
