@@ -23,7 +23,7 @@ pub struct Canvas {
     comment_lines: CommentsGroup,
 }
 
-// creation and setup
+// creation, setup and utils
 impl Canvas {
     pub fn new() -> Self {
         Canvas {
@@ -58,6 +58,10 @@ impl Canvas {
         self.response = Some(response);
         self.painter = Some(painter);
     }
+
+    fn set_cursor_icon(&self, cursor_icon: egui::CursorIcon) {
+        self.response().ctx.set_cursor_icon(cursor_icon);
+    }
 }
 
 // nodes
@@ -85,9 +89,7 @@ impl Canvas {
 
     pub fn handle_node_draging(&mut self, graph: &mut Graph) {
         if let Some(mouse_pos) = self.response().interact_pointer_pos() {
-            self.response()
-                .ctx
-                .set_cursor_icon(egui::CursorIcon::Grabbing);
+            self.set_cursor_icon(egui::CursorIcon::Grabbing);
 
             if let Some(id) = graph.dragging() {
                 let node = graph.nodes().get(&id).unwrap();
@@ -209,9 +211,7 @@ impl Canvas {
         if let (Some(edge_start), Some(mouse_pos)) =
             (self.new_edge_start, self.response().hover_pos())
         {
-            self.response()
-                .ctx
-                .set_cursor_icon(egui::CursorIcon::PointingHand);
+            self.set_cursor_icon(egui::CursorIcon::PointingHand);
             let start_node = &graph.nodes()[&edge_start];
 
             if start_node.position.distance(mouse_pos) < start_node.radius {
@@ -411,7 +411,7 @@ impl Canvas {
 // comment lines
 impl Canvas {
     pub fn handle_comment_draw(&mut self, stroke: Stroke) {
-        self.response().ctx.set_cursor_icon(egui::CursorIcon::Cell);
+        self.set_cursor_icon(egui::CursorIcon::Cell);
 
         if self.comment_lines.is_empty() {
             self.comment_lines.insert(CommentLine::from(stroke));
@@ -498,7 +498,7 @@ impl Canvas {
             return;
         }
 
-        self.response().ctx.set_cursor_icon(egui::CursorIcon::None);
+        self.set_cursor_icon(egui::CursorIcon::None);
 
         let square_center = self.response().hover_pos().unwrap();
         let square = Rect::from_center_size(square_center, Vec2::new(10.0, 10.0));
