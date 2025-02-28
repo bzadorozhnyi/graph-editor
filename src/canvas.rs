@@ -23,6 +23,7 @@ pub struct Canvas {
     comment_lines: CommentsGroup,
 }
 
+// creation and setup
 impl Canvas {
     pub fn new() -> Self {
         Canvas {
@@ -57,7 +58,10 @@ impl Canvas {
         self.response = Some(response);
         self.painter = Some(painter);
     }
+}
 
+// nodes
+impl Canvas {
     /// Evaluate new position of node, which satisfy painter's bounds constraints
     fn bounds_constraint_correction(&self, node: &Node, mouse_pos: Pos2) -> Pos2 {
         let new_x = if mouse_pos.x - node.radius < self.painter_area.min.x {
@@ -122,6 +126,34 @@ impl Canvas {
         }
     }
 
+    pub fn draw_node(&self, node: &Node) {
+        self.painter()
+            .circle(node.position, node.radius, node.color, Stroke::NONE);
+
+        let label_size = if node.label_size_matches_node_size {
+            node.radius
+        } else {
+            node.label_size
+        };
+
+        self.painter().text(
+            node.position,
+            Align2::CENTER_CENTER,
+            &node.label,
+            FontId::new(label_size, FontFamily::Monospace),
+            Color32::BLACK,
+        );
+    }
+
+    pub fn draw_nodes(&mut self, graph: &Graph) {
+        for node in graph.nodes().values() {
+            self.draw_node(node);
+        }
+    }
+}
+
+// edges
+impl Canvas {
     /// Return true if edge was created
     pub fn handle_edge_creation(&mut self, graph: &mut Graph) -> bool {
         let mut edge_created = false;
@@ -374,32 +406,10 @@ impl Canvas {
             }
         }
     }
+}
 
-    pub fn draw_node(&self, node: &Node) {
-        self.painter()
-            .circle(node.position, node.radius, node.color, Stroke::NONE);
-
-        let label_size = if node.label_size_matches_node_size {
-            node.radius
-        } else {
-            node.label_size
-        };
-
-        self.painter().text(
-            node.position,
-            Align2::CENTER_CENTER,
-            &node.label,
-            FontId::new(label_size, FontFamily::Monospace),
-            Color32::BLACK,
-        );
-    }
-
-    pub fn draw_nodes(&mut self, graph: &Graph) {
-        for node in graph.nodes().values() {
-            self.draw_node(node);
-        }
-    }
-
+// comment lines
+impl Canvas {
     pub fn handle_comment_draw(&mut self, stroke: Stroke) {
         self.response().ctx.set_cursor_icon(egui::CursorIcon::Cell);
 
