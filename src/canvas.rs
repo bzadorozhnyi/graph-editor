@@ -287,15 +287,17 @@ impl Canvas {
     fn draw_loop(&self, ui: &mut Ui, graph: &Graph, edge: &Edge, shift: f32) {
         let node = &graph.nodes()[&edge.start_id];
 
-        let mut start = node.position - Vec2::new(0.0, node.radius);
-        let mut end = node.position - Vec2::new(node.radius, 0.0);
-
-        if edge.is_loop() {
-            let rotation_angle = edge.loop_rotation_angle.to_radians();
-
-            start = self.rotate_border_point(start, node.position, rotation_angle);
-            end = self.rotate_border_point(end, node.position, rotation_angle);
-        }
+        let rotation_angle = edge.loop_rotation_angle.to_radians();
+        let start = self.rotate_border_point(
+            node.position - Vec2::new(0.0, node.radius),
+            node.position,
+            rotation_angle,
+        );
+        let end = self.rotate_border_point(
+            node.position - Vec2::new(node.radius, 0.0),
+            node.position,
+            rotation_angle,
+        );
 
         let direction1 = (node.position - start).normalized();
         let direction2 = (node.position - end).normalized();
