@@ -81,6 +81,10 @@ impl Canvas {
 
     pub fn handle_draging(&mut self, graph: &mut Graph) {
         if let Some(mouse_pos) = self.response().interact_pointer_pos() {
+            self.response()
+                .clone()
+                .on_hover_cursor(egui::CursorIcon::Grabbing);
+
             if let Some(id) = graph.dragging() {
                 let node = graph.nodes().get(&id).unwrap();
                 let corrected_pos = self.bounds_constraint_correction(node, mouse_pos);
@@ -173,6 +177,9 @@ impl Canvas {
         if let (Some(edge_start), Some(mouse_pos)) =
             (self.new_edge_start, self.response().hover_pos())
         {
+            self.response()
+                .clone()
+                .on_hover_cursor(egui::CursorIcon::PointingHand);
             let start_node = &graph.nodes()[&edge_start];
 
             if start_node.position.distance(mouse_pos) < start_node.radius {
@@ -394,6 +401,10 @@ impl Canvas {
     }
 
     pub fn handle_comment_draw(&mut self, stroke: Stroke) {
+        self.response()
+            .clone()
+            .on_hover_cursor(egui::CursorIcon::Cell);
+
         if self.comment_lines.is_empty() {
             self.comment_lines.insert(CommentLine::from(stroke));
         }
