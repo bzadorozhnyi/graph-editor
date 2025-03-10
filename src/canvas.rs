@@ -20,7 +20,6 @@ pub struct Canvas {
     painter: Option<Painter>,
     painter_area: Rect,
     new_edge_start: Option<NodeId>,
-    comment_lines: CommentsGroup,
 }
 
 // creation, setup and utils
@@ -31,7 +30,6 @@ impl Canvas {
             painter: None,
             painter_area: Rect::ZERO,
             new_edge_start: None,
-            comment_lines: CommentsGroup::new(),
         }
     }
 
@@ -392,16 +390,16 @@ impl Canvas {
 
 // comment lines
 impl Canvas {
-    pub fn handle_comment_draw(&mut self, stroke: Stroke) {
+    pub fn handle_comment_draw(&mut self, stroke: Stroke, comment_lines: &mut CommentsGroup) {
         self.set_cursor_icon(egui::CursorIcon::Cell);
 
-        if self.comment_lines.is_empty() {
-            self.comment_lines.insert(CommentLine::from(stroke));
+        if comment_lines.is_empty() {
+            comment_lines.insert(CommentLine::from(stroke));
         }
 
         let pointer_pos = self.response().interact_pointer_pos();
 
-        let current_line = self.comment_lines.last_added_mut().unwrap();
+        let current_line = comment_lines.last_added_mut().unwrap();
         // update selected params
         if current_line.is_empty() {
             current_line.stroke = stroke;
@@ -412,7 +410,7 @@ impl Canvas {
                 current_line.points.push(pointer_pos);
             }
         } else if !current_line.is_empty() {
-            self.comment_lines.insert(CommentLine::new());
+            comment_lines.insert(CommentLine::new());
         }
     }
 
@@ -475,7 +473,7 @@ impl Canvas {
         false
     }
 
-    pub fn handle_comment_erase(&mut self) {
+    pub fn handle_comment_erase(&mut self, comment_lines: &mut CommentsGroup) {
         if self.response().hover_pos().is_none() {
             return;
         }
@@ -495,7 +493,7 @@ impl Canvas {
                 .rect_stroke(square, 0.0, Stroke::new(1.0, Color32::BLACK));
 
             let mut selected_line_id = None;
-            for (id, line) in self.comment_lines.iter() {
+            for (id, line) in comment_lines.iter() {
                 if self.is_intersect_square(line, square) {
                     selected_line_id = Some(id);
                     break;
@@ -503,14 +501,13 @@ impl Canvas {
             }
 
             if let Some(id) = selected_line_id {
-                self.comment_lines.remove(*id);
+                comment_lines.remove(*id);
             }
         }
     }
 
-    pub fn draw_comment_lines(&self) {
-        let lines = self
-            .comment_lines
+    pub fn draw_comment_lines(&self, comment_lines: &CommentsGroup) {
+        let lines = comment_lines
             .iter()
             .filter(|(_, line)| line.len() >= 2)
             .map(|(_, line)| egui::Shape::line(line.points.clone(), line.stroke));

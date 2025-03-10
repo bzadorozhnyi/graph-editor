@@ -47,4 +47,9 @@ impl CommentsGroup {
 
         self.data.get_mut(&CommentId(last_id))
     }
+
+    pub fn clear(&mut self) {
+        self.data.clear();
+        self.comment_id_counter = 0;
+    }
 }

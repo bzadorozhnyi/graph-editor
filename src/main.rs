@@ -1,7 +1,7 @@
 use eframe::egui::{self, Margin, SidePanel};
 use graph_editor_egui::{
     canvas::Canvas,
-    comment_line::editor::CommentsEditor,
+    comment_line::{editor::CommentsEditor, group::CommentsGroup},
     edge_editor::EdgeEditor,
     edges_table::EdgesTable,
     graph::{Graph, Node},
@@ -30,6 +30,7 @@ enum Editor {
 
 struct MyApp {
     graph: Graph,
+    comment_lines: CommentsGroup,
     canvas: Canvas,
     node_editor: NodeEditor,
     edges_table: EdgesTable,
@@ -42,6 +43,7 @@ impl Default for MyApp {
     fn default() -> Self {
         Self {
             graph: Graph::new(),
+            comment_lines: CommentsGroup::new(),
             canvas: Canvas::new(),
             node_editor: NodeEditor::new(),
             edges_table: EdgesTable::new(),
@@ -86,7 +88,7 @@ impl eframe::App for MyApp {
                                 self.edge_editor.ui(ui, &mut self.graph);
                             }
                             Editor::CommentLine => {
-                                self.comments_editor.ui(ui);
+                                self.comments_editor.ui(ui, &mut self.comment_lines);
                             }
                         });
                 });
@@ -103,11 +105,13 @@ impl eframe::App for MyApp {
 
             if self.selected_editor == Editor::CommentLine {
                 if self.comments_editor.draw_mode_active() {
-                    self.canvas
-                        .handle_comment_draw(self.comments_editor.selected_stroke());
+                    self.canvas.handle_comment_draw(
+                        self.comments_editor.selected_stroke(),
+                        &mut self.comment_lines,
+                    );
                 }
                 if self.comments_editor.erase_mode_active() {
-                    self.canvas.handle_comment_erase();
+                    self.canvas.handle_comment_erase(&mut self.comment_lines);
                 }
             } else {
                 self.canvas.handle_node_draging(&mut self.graph);
@@ -123,7 +127,7 @@ impl eframe::App for MyApp {
             self.canvas.draw_possible_edge(&self.graph);
             self.canvas.draw_edges(ui, &self.graph);
             self.canvas.draw_nodes(&self.graph);
-            self.canvas.draw_comment_lines();
+            self.canvas.draw_comment_lines(&self.comment_lines);
         });
     }
 }
