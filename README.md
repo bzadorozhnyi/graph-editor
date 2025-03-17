@@ -12,23 +12,23 @@ Here is simple editor to visualize graph made with `Rust` and [`egui`](https://g
 ### Support node creation and modification
 
 <p align="center">
-    <img src="media/node.gif", alt="Logo">
+    <video src="media/node.mp4", alt="Node"></video>
 </p>
 
 ### Support edge multiedging creation and modification (including loop edges)
 
 <p align="center">
-    <img src="media/edges.gif", alt="Logo">
+    <video src="media/edges.mp4", alt="Edges"></video>
 </p> 
 
 ### Adding comment lines above graph
 
 <p align="center">
-    <img src="media/comments.gif", alt="Logo">
+    <video src="media/comments.mp4", alt="Comment_lines"></video>
 </p> 
 
 ### Labels autorotation
 
 <p align="center">
-    <img src="media/labels-rotation.gif", alt="Logo">
+    <video src="media/labels-rotation.mp4", alt="Labels_rotation"></video>
 </p> 
