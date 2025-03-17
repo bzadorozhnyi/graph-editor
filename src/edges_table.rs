@@ -3,13 +3,9 @@ use egui_extras::{Column, TableBuilder};
 
 use crate::graph::{edge::EdgeId, Graph};
 
-pub struct EdgesTable {}
+pub struct EdgesTable;
 
 impl EdgesTable {
-    pub fn new() -> Self {
-        Self {}
-    }
-
     pub fn name(&self) -> &'static str {
         "Edges Table"
     }
@@ -64,10 +60,10 @@ impl EdgesTable {
                         }
                     });
                     row.col(|ui| {
-                        ui.label(&graph.nodes()[&graph.edges()[&edge_id].start_id].label);
+                        ui.label(&graph.nodes()[&graph.edges()[edge_id].start_id].label);
                     });
                     row.col(|ui| {
-                        ui.label(&graph.nodes()[&graph.edges()[&edge_id].end_id].label);
+                        ui.label(&graph.nodes()[&graph.edges()[edge_id].end_id].label);
                     });
                     row.col(|ui| {
                         frame::Frame::default()

@@ -2,21 +2,18 @@ use std::collections::HashMap;
 
 use crate::comment_line::CommentLine;
 
-
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub struct CommentId(usize);
 
+#[derive(Default)]
 pub struct CommentsGroup {
     data: HashMap<CommentId, CommentLine>,
-    comment_id_counter: usize
+    comment_id_counter: usize,
 }
 
 impl CommentsGroup {
     pub fn new() -> Self {
-        Self {
-            data: HashMap::new(),
-            comment_id_counter: 0
-        }
+        Default::default()
     }
 
     pub fn insert(&mut self, line: CommentLine) {

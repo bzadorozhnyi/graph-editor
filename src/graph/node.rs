@@ -13,8 +13,8 @@ pub struct Node {
     pub label_size: f32,
 }
 
-impl Node {
-    pub fn new() -> Self {
+impl Default for Node {
+    fn default() -> Self {
         Self {
             position: Pos2::new(100.0, 100.0),
             radius: 20.0,
@@ -23,5 +23,11 @@ impl Node {
             label_size_matches_node_size: true,
             label_size: 20.0,
         }
+    }
+}
+
+impl Node {
+    pub fn new() -> Self {
+        Default::default()
     }
 }

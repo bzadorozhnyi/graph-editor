@@ -9,6 +9,7 @@ use edge::EdgeId;
 pub use node::Node;
 pub use node::NodeId;
 
+#[derive(Default)]
 pub struct Graph {
     nodes: HashMap<NodeId, Node>,
     edges: BTreeMap<EdgeId, Edge>,
@@ -21,15 +22,7 @@ pub struct Graph {
 
 impl Graph {
     pub fn new() -> Self {
-        Self {
-            nodes: HashMap::new(),
-            edges: BTreeMap::new(),
-            selected_node_id: None,
-            selected_edge_id: None,
-            dragging: None,
-            node_id_counter: 0,
-            edge_id_counter: 0,
-        }
+        Default::default()
     }
 
     pub fn nodes(&self) -> &HashMap<NodeId, Node> {

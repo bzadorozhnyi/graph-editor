@@ -22,15 +22,21 @@ pub struct Canvas {
     new_edge_start: Option<NodeId>,
 }
 
-// creation, setup and utils
-impl Canvas {
-    pub fn new() -> Self {
-        Canvas {
+impl Default for Canvas {
+    fn default() -> Self {
+        Self {
             response: None,
             painter: None,
             painter_area: Rect::ZERO,
             new_edge_start: None,
         }
+    }
+}
+
+// creation, setup and utils
+impl Canvas {
+    pub fn new() -> Self {
+        Default::default()
     }
 
     fn response(&self) -> &Response {
@@ -373,7 +379,7 @@ impl Canvas {
             if start_id == end_id {
                 // iterate over loops
                 for (index, &edge) in edges.iter().enumerate() {
-                    self.draw_loop(ui, &graph, edge, index as f32);
+                    self.draw_loop(ui, graph, edge, index as f32);
                 }
             } else {
                 let edges_number = (edges.len() / 2) as isize;

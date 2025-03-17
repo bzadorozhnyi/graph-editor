@@ -8,13 +8,19 @@ pub struct CommentsEditor {
     stroke: Stroke,
 }
 
-impl CommentsEditor {
-    pub fn new() -> Self {
+impl Default for CommentsEditor {
+    fn default() -> Self {
         Self {
             draw_active: false,
             erase_active: false,
             stroke: Stroke::new(1.0, Rgba::from(Color32::BLACK)),
         }
+    }
+}
+
+impl CommentsEditor {
+    pub fn new() -> Self {
+        Default::default()
     }
 
     pub fn name(&self) -> &'static str {
@@ -33,20 +39,22 @@ impl CommentsEditor {
         ui.add_space(5.0);
 
         ui.horizontal(|ui| {
-            if ui.toggle_value(&mut self.draw_active, "✏").clicked() {
-                if self.draw_active && self.erase_active {
-                    self.erase_active = false;
-                }
+            if ui.toggle_value(&mut self.draw_active, "✏").clicked()
+                && self.draw_active
+                && self.erase_active
+            {
+                self.erase_active = false;
             }
 
             ui.add_space(5.0);
 
             ui.add(&mut self.stroke);
 
-            if ui.toggle_value(&mut self.erase_active, "🗑").clicked() {
-                if self.draw_active && self.erase_active {
-                    self.draw_active = false;
-                }
+            if ui.toggle_value(&mut self.erase_active, "🗑").clicked()
+                && self.draw_active
+                && self.erase_active
+            {
+                self.draw_active = false;
             }
         });
 
@@ -58,7 +66,10 @@ impl CommentsEditor {
 
         ui.with_layout(Layout::right_to_left(egui::Align::TOP), |ui| {
             if ui
-                .add(Button::new(RichText::new("Clear all").color(Color32::WHITE)).fill(Color32::RED))
+                .add(
+                    Button::new(RichText::new("Clear all").color(Color32::WHITE))
+                        .fill(Color32::RED),
+                )
                 .clicked()
             {
                 comment_lines.clear();

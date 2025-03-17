@@ -6,21 +6,18 @@ pub mod group;
 #[derive(Debug)]
 pub struct CommentLine {
     pub points: Vec<Pos2>,
-    pub stroke: Stroke
+    pub stroke: Stroke,
 }
 
 impl CommentLine {
     pub fn new() -> Self {
-        Self {
-            points: vec![],
-            stroke: Stroke::new(1.0, Rgba::from(Color32::BLACK))
-        }
+        Default::default()
     }
 
     pub fn from(stroke: Stroke) -> Self {
         Self {
             points: vec![],
-            stroke
+            stroke,
         }
     }
 
@@ -30,5 +27,14 @@ impl CommentLine {
 
     pub fn is_empty(&self) -> bool {
         self.points.is_empty()
+    }
+}
+
+impl Default for CommentLine {
+    fn default() -> Self {
+        Self {
+            points: vec![],
+            stroke: Stroke::new(1.0, Rgba::from(Color32::BLACK)),
+        }
     }
 }

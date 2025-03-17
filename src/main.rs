@@ -45,9 +45,9 @@ impl Default for MyApp {
             graph: Graph::new(),
             comment_lines: CommentsGroup::new(),
             canvas: Canvas::new(),
-            node_editor: NodeEditor::new(),
-            edges_table: EdgesTable::new(),
-            edge_editor: EdgeEditor::new(),
+            node_editor: NodeEditor,
+            edges_table: EdgesTable,
+            edge_editor: EdgeEditor,
             comments_editor: CommentsEditor::new(),
             selected_editor: Editor::Node,
         }

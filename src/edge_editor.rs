@@ -4,13 +4,9 @@ use eframe::egui::{
 
 use crate::graph::Graph;
 
-pub struct EdgeEditor {}
+pub struct EdgeEditor;
 
 impl EdgeEditor {
-    pub fn new() -> Self {
-        Self {}
-    }
-
     pub fn name(&self) -> &'static str {
         "Edge Editor"
     }
