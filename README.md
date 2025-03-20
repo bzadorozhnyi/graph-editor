@@ -7,6 +7,16 @@ Here is simple editor to visualize graph made with `Rust` and [`egui`](https://g
     <img src="media/logo_1.png", alt="Logo">
 </p>
 
+## Usage
+
+### Edge creation
+
+Click on node with the right button of mouse to start the edge. Same way to end the edge (on selected node). 
+
+### Other things
+
+Use ui to create, modify and custome your graph.
+
 ## Abilities
 
 ### Support node creation and modification
