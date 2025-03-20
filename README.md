@@ -13,6 +13,8 @@ Here is simple editor to visualize graph made with `Rust` and [`egui`](https://g
 
 Click on node with the right button of mouse to start the edge. Same way to end the edge (on selected node). 
 
+To cancel edge creation just click `Esc` (`Escape`).
+
 ### Other things
 
 Use ui to create, modify and custome your graph.
