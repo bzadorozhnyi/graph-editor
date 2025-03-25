@@ -6,7 +6,7 @@ pub const CONTROL_OFFSET: f32 = 50.0;
 pub const MIN_NODE_LABEL_SIZE: f32 = 20.0;
 pub const MAX_NODE_LABEL_SIZE: f32 = 100.0;
 
-pub const MIN_NODE_RADIUS: f32 = 10.0;
+pub const MIN_NODE_RADIUS: f32 = 20.0;
 pub const MAX_NODE_RADIUS: f32 = 100.0;
 
 pub const MIN_EDGE_WIDTH: f32 = 2.0;
