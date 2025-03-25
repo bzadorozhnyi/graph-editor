@@ -11,7 +11,7 @@ use eframe::{
 
 use crate::{
     comment_line::{group::CommentsGroup, CommentLine},
-    consts::{ARROW_HALF_ANGLE, ARROW_LEN_COEF, CONTROL_OFFSET, DELTA_ANGLE},
+    consts::{ARROW_HALF_ANGLE, ARROW_LEN_COEF, CONTROL_OFFSET, DELTA_ANGLE, MIN_NODE_RADIUS},
     graph::{Edge, Graph, Node, NodeId},
 };
 
@@ -306,7 +306,7 @@ impl Canvas {
         let direction1 = (node.position - start).normalized();
         let direction2 = (node.position - end).normalized();
 
-        let offset = CONTROL_OFFSET * (node.radius / 20.0) * (1.0 + shift);
+        let offset = CONTROL_OFFSET * (node.radius / (2.0 * MIN_NODE_RADIUS)) * (1.0 + shift);
         let control1 = start - direction1 * offset;
         let control2 = end - direction2 * offset;
 

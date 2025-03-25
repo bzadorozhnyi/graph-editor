@@ -1,5 +1,10 @@
 use eframe::egui::{Color32, Rgba};
 
+use crate::consts::{
+    MAX_EDGE_LABEL_PADDING, MIN_EDGE_LABEL_PADDING, MIN_EDGE_LABEL_SIZE, MIN_EDGE_WIDTH,
+    MIN_LOOP_EDGE_ANGLE,
+};
+
 use super::NodeId;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -16,7 +21,7 @@ pub struct Edge {
     pub padding_x: f32,
     pub padding_y: f32,
     pub width: f32,
-    pub loop_rotation_angle: f32
+    pub loop_rotation_angle: f32,
 }
 
 impl Edge {
@@ -27,11 +32,11 @@ impl Edge {
             oriented: true,
             color: Rgba::from(Color32::BLACK),
             label: String::new(),
-            label_size: 10.0,
-            padding_x: 0.0,
-            padding_y: 0.0,
-            width: 2.0,
-            loop_rotation_angle: 0.0
+            label_size: MIN_EDGE_LABEL_SIZE,
+            padding_x: (MIN_EDGE_LABEL_PADDING + MAX_EDGE_LABEL_PADDING) / 2.0,
+            padding_y: (MIN_EDGE_LABEL_PADDING + MAX_EDGE_LABEL_PADDING) / 2.0,
+            width: MIN_EDGE_WIDTH,
+            loop_rotation_angle: MIN_LOOP_EDGE_ANGLE,
         }
     }
 
