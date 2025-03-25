@@ -3,7 +3,7 @@ use eframe::egui::{
 };
 
 use crate::{
-    consts::{MAX_LABEL_SIZE, MAX_NODE_RADIUS, MIN_LABEL_SIZE, MIN_NODE_RADIUS, UI_SPACE},
+    consts::{MAX_NODE_LABEL_SIZE, MAX_NODE_RADIUS, MIN_NODE_LABEL_SIZE, MIN_NODE_RADIUS, UI_SPACE},
     graph::Graph,
 };
 
@@ -62,7 +62,7 @@ impl NodeEditor {
 
                 ui.add(
                     DragValue::new(&mut selected_node.label_size)
-                        .range(MIN_LABEL_SIZE..=MAX_LABEL_SIZE)
+                        .range(MIN_NODE_LABEL_SIZE..=MAX_NODE_LABEL_SIZE)
                         .speed(0.2)
                         .prefix("Label size: "),
                 );

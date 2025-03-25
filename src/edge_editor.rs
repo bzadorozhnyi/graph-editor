@@ -2,7 +2,13 @@ use eframe::egui::{
     self, color_picker::color_edit_button_rgba, Button, Color32, DragValue, Layout, RichText,
 };
 
-use crate::graph::Graph;
+use crate::{
+    consts::{
+        MAX_EDGE_LABEL_PADDING, MAX_EDGE_LABEL_SIZE, MAX_EDGE_WIDTH, MAX_LOOP_EDGE_ANGLE,
+        MIN_EDGE_LABEL_PADDING, MIN_EDGE_LABEL_SIZE, MIN_EDGE_WIDTH, MIN_LOOP_EDGE_ANGLE, UI_SPACE,
+    },
+    graph::Graph,
+};
 
 pub struct EdgeEditor;
 
@@ -39,17 +45,17 @@ impl EdgeEditor {
                     &mut selected_edge.color,
                     egui::color_picker::Alpha::Opaque,
                 );
-                ui.add_space(5.0);
+                ui.add_space(UI_SPACE);
                 ui.add(
                     DragValue::new(&mut selected_edge.width)
-                        .range(1.0..=5.0)
+                        .range(MIN_EDGE_WIDTH..=MAX_EDGE_WIDTH)
                         .speed(0.2)
                         .prefix("Width: "),
                 );
 
                 // loop direction is unnecessary
                 if !selected_edge.is_loop() {
-                    ui.add_space(5.0);
+                    ui.add_space(UI_SPACE);
                     let oriented = if selected_edge.oriented {
                         "Oriented"
                     } else {
@@ -63,7 +69,7 @@ impl EdgeEditor {
                 ui.separator();
                 ui.add(
                     DragValue::new(&mut selected_edge.loop_rotation_angle)
-                        .range(0.0..=360.0)
+                        .range(MIN_LOOP_EDGE_ANGLE..=MAX_LOOP_EDGE_ANGLE)
                         .speed(1)
                         .prefix("Loop rot. angle: ")
                         .suffix("°"),
@@ -77,13 +83,13 @@ impl EdgeEditor {
                     ui.text_edit_singleline(&mut selected_edge.label);
                 });
 
-                ui.add_space(5.0);
+                ui.add_space(UI_SPACE);
 
                 ui.vertical(|ui| {
                     ui.horizontal(|ui| {
                         ui.add(
                             DragValue::new(&mut selected_edge.label_size)
-                                .range(10.0..=36.0)
+                                .range(MIN_EDGE_LABEL_SIZE..=MAX_EDGE_LABEL_SIZE)
                                 .speed(0.2)
                                 .prefix("Size: "),
                         );
@@ -92,12 +98,12 @@ impl EdgeEditor {
                         }
                     });
 
-                    ui.add_space(5.0);
+                    ui.add_space(UI_SPACE);
 
                     ui.horizontal(|ui| {
                         ui.add(
                             DragValue::new(&mut selected_edge.padding_x)
-                                .range(-100.0..=100.0)
+                                .range(MIN_EDGE_LABEL_PADDING..=MAX_EDGE_LABEL_PADDING)
                                 .speed(1.0)
                                 .prefix("X: "),
                         );
@@ -106,12 +112,12 @@ impl EdgeEditor {
                         }
                     });
 
-                    ui.add_space(5.0);
+                    ui.add_space(UI_SPACE);
 
                     ui.horizontal(|ui| {
                         ui.add(
                             DragValue::new(&mut selected_edge.padding_y)
-                                .range(-100.0..=100.0)
+                                .range(MIN_EDGE_LABEL_PADDING..=MAX_EDGE_LABEL_PADDING)
                                 .speed(1.0)
                                 .prefix("Y: "),
                         );
