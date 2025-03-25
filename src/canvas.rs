@@ -462,15 +462,18 @@ impl Canvas {
     }
 
     pub fn is_intersect_square(&self, comment_line: &CommentLine, square: Rect) -> bool {
-        for point in &comment_line.points {
-            if square.contains(*point) {
-                return true;
-            }
+        let square_edges = [
+            [square.left_top(), square.right_top()],
+            [square.right_top(), square.right_bottom()],
+            [square.right_bottom(), square.left_bottom()],
+            [square.left_bottom(), square.left_top()],
+        ];
 
-            if self.is_intersect(comment_line, [square.left_top(), square.right_top()])
-                || self.is_intersect(comment_line, [square.right_top(), square.right_bottom()])
-                || self.is_intersect(comment_line, [square.right_bottom(), square.left_bottom()])
-                || self.is_intersect(comment_line, [square.left_bottom(), square.left_top()])
+        for point in &comment_line.points {
+            if square.contains(*point)
+                || square_edges
+                    .iter()
+                    .any(|edge| self.is_intersect(comment_line, *edge))
             {
                 return true;
             }
