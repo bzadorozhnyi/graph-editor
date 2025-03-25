@@ -1,5 +1,7 @@
 use eframe::egui::{self, Button, Color32, Layout, Rgba, RichText, Stroke};
 
+use crate::consts::UI_SPACE;
+
 use super::group::CommentsGroup;
 
 pub struct CommentsEditor {
@@ -32,11 +34,11 @@ impl CommentsEditor {
             ui.label(RichText::new(self.name()).size(24.0));
         });
 
-        ui.add_space(5.0);
+        ui.add_space(UI_SPACE);
 
         ui.separator();
 
-        ui.add_space(5.0);
+        ui.add_space(UI_SPACE);
 
         ui.horizontal(|ui| {
             if ui.toggle_value(&mut self.draw_active, "✏").clicked()
@@ -46,7 +48,7 @@ impl CommentsEditor {
                 self.erase_active = false;
             }
 
-            ui.add_space(5.0);
+            ui.add_space(UI_SPACE);
 
             ui.add(&mut self.stroke);
 
@@ -58,11 +60,11 @@ impl CommentsEditor {
             }
         });
 
-        ui.add_space(5.0);
+        ui.add_space(UI_SPACE);
 
         ui.separator();
 
-        ui.add_space(5.0);
+        ui.add_space(UI_SPACE);
 
         ui.with_layout(Layout::right_to_left(egui::Align::TOP), |ui| {
             if ui
