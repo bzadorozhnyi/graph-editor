@@ -2,7 +2,10 @@ use eframe::egui::{
     self, color_picker::color_edit_button_rgba, Button, Color32, DragValue, Layout, RichText,
 };
 
-use crate::graph::Graph;
+use crate::{
+    consts::{MAX_LABEL_SIZE, MAX_NODE_RADIUS, MIN_LABEL_SIZE, MIN_NODE_RADIUS, UI_SPACE},
+    graph::Graph,
+};
 
 pub struct NodeEditor;
 
@@ -26,11 +29,11 @@ impl NodeEditor {
                     egui::color_picker::Alpha::Opaque,
                 );
 
-                ui.add_space(5.0);
+                ui.add_space(UI_SPACE);
 
                 ui.add(
                     DragValue::new(&mut selected_node.radius)
-                        .range(10.0..=100.0)
+                        .range(MIN_NODE_RADIUS..=MAX_NODE_RADIUS)
                         .speed(0.2)
                         .prefix("Size: "),
                 );
@@ -44,7 +47,7 @@ impl NodeEditor {
                     ui.text_edit_singleline(&mut selected_node.label);
                 });
 
-                ui.add_space(5.0);
+                ui.add_space(UI_SPACE);
 
                 ui.checkbox(
                     &mut selected_node.label_size_matches_node_size,
@@ -55,11 +58,11 @@ impl NodeEditor {
                     ui.disable();
                 }
 
-                ui.add_space(5.0);
+                ui.add_space(UI_SPACE);
 
                 ui.add(
                     DragValue::new(&mut selected_node.label_size)
-                        .range(20.0..=100.0)
+                        .range(MIN_LABEL_SIZE..=MAX_LABEL_SIZE)
                         .speed(0.2)
                         .prefix("Label size: "),
                 );
