@@ -70,40 +70,40 @@ impl Canvas {
 // nodes
 impl Canvas {
     /// Evaluate new position of node, which satisfy painter's bounds constraints
-    fn bounds_constraint_correction(&self, node: &Node, mouse_pos: Pos2) -> Pos2 {
-        let new_x = if mouse_pos.x - node.radius < self.painter_area.min.x {
+    fn bounds_constraint_correction(&self, node: &Node, pointer_pos: Pos2) -> Pos2 {
+        let new_x = if pointer_pos.x - node.radius < self.painter_area.min.x {
             self.painter_area.min.x + node.radius
-        } else if mouse_pos.x + node.radius > self.painter_area.max.x {
+        } else if pointer_pos.x + node.radius > self.painter_area.max.x {
             self.painter_area.max.x - node.radius
         } else {
-            mouse_pos.x
+            pointer_pos.x
         };
 
-        let new_y = if mouse_pos.y - node.radius < self.painter_area.min.y {
+        let new_y = if pointer_pos.y - node.radius < self.painter_area.min.y {
             self.painter_area.min.y + node.radius
-        } else if mouse_pos.y + node.radius > self.painter_area.max.y {
+        } else if pointer_pos.y + node.radius > self.painter_area.max.y {
             self.painter_area.max.y - node.radius
         } else {
-            mouse_pos.y
+            pointer_pos.y
         };
 
         Pos2::new(new_x, new_y)
     }
 
     pub fn handle_node_draging(&mut self, graph: &mut Graph) {
-        if let Some(mouse_pos) = self.response().interact_pointer_pos() {
+        if let Some(pointer_pos) = self.response().interact_pointer_pos() {
             self.set_cursor_icon(egui::CursorIcon::Grabbing);
 
             if let Some(id) = graph.dragging() {
                 let node = graph.nodes().get(&id).unwrap();
                 graph.node_mut(&id).unwrap().position =
-                    self.bounds_constraint_correction(node, mouse_pos);
+                    self.bounds_constraint_correction(node, pointer_pos);
 
                 return;
             }
 
             for (id, node) in graph.nodes().iter() {
-                if node.position.distance(mouse_pos) < node.radius {
+                if node.position.distance(pointer_pos) < node.radius {
                     graph.set_dragging(Some(*id));
                     break;
                 }
@@ -114,9 +114,9 @@ impl Canvas {
     }
 
     pub fn handle_node_selection(&mut self, graph: &mut Graph) {
-        if let Some(mouse_pos) = self.response().interact_pointer_pos() {
+        if let Some(pointer_pos) = self.response().interact_pointer_pos() {
             for (id, node) in graph.nodes() {
-                if node.position.distance(mouse_pos) < node.radius {
+                if node.position.distance(pointer_pos) < node.radius {
                     graph.set_selected_node_id(Some(*id));
                     break;
                 }
@@ -169,10 +169,10 @@ impl Canvas {
         }
 
         if let Some(edge_start) = self.new_edge_start {
-            let mouse_pos = self.response().interact_pointer_pos().unwrap();
+            let pointer_pos = self.response().interact_pointer_pos().unwrap();
 
             for (id, node) in graph.nodes() {
-                if node.position.distance(mouse_pos) < node.radius {
+                if node.position.distance(pointer_pos) < node.radius {
                     graph.add_edge(Edge::new(edge_start, *id));
                     self.new_edge_start = None;
 
@@ -186,9 +186,9 @@ impl Canvas {
 
     pub fn handle_setting_edge_start(&mut self, graph: &Graph) {
         if self.response().secondary_clicked() {
-            let mouse_pos = self.response().interact_pointer_pos().unwrap();
+            let pointer_pos = self.response().interact_pointer_pos().unwrap();
             for (id, node) in graph.nodes() {
-                if node.position.distance(mouse_pos) < node.radius {
+                if node.position.distance(pointer_pos) < node.radius {
                     self.new_edge_start = Some(*id);
                     break;
                 }
@@ -197,13 +197,13 @@ impl Canvas {
     }
 
     pub fn draw_possible_edge(&mut self, graph: &Graph) {
-        if let (Some(edge_start), Some(mouse_pos)) =
+        if let (Some(edge_start), Some(pointer_pos)) =
             (self.new_edge_start, self.response().hover_pos())
         {
             self.set_cursor_icon(egui::CursorIcon::PointingHand);
             let start_node = &graph.nodes()[&edge_start];
 
-            if start_node.position.distance(mouse_pos) < start_node.radius {
+            if start_node.position.distance(pointer_pos) < start_node.radius {
                 // draw loop
                 let start_pos = start_node.position - Vec2::new(0.0, start_node.radius);
                 let end_pos = start_node.position - Vec2::new(start_node.radius, 0.0);
@@ -219,7 +219,7 @@ impl Canvas {
                 ));
             } else {
                 self.painter().line_segment(
-                    [start_node.position, mouse_pos],
+                    [start_node.position, pointer_pos],
                     Stroke::new(2.0, Color32::BLACK),
                 );
             }
