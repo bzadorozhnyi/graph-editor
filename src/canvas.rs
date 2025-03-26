@@ -90,10 +90,12 @@ impl Canvas {
         Pos2::new(new_x, new_y)
     }
 
+    /// Handle node dragging.
     pub fn handle_node_draging(&mut self, graph: &mut Graph) {
         if let Some(pointer_pos) = self.response().interact_pointer_pos() {
             self.set_cursor_icon(egui::CursorIcon::Grabbing);
 
+            // drag selected node to poiter pos
             if let Some(id) = graph.dragging_node() {
                 let node = graph.nodes().get(&id).unwrap();
                 graph.node_mut(&id).unwrap().position =
@@ -102,6 +104,7 @@ impl Canvas {
                 return;
             }
 
+            // if pointer pos is the same as some node => mark node as dragging node
             for (id, node) in graph.nodes().iter() {
                 if node.position.distance(pointer_pos) < node.radius {
                     graph.set_dragging_node(Some(*id));
@@ -109,10 +112,12 @@ impl Canvas {
                 }
             }
         } else {
+            // any node is not node dragging
             graph.set_dragging_node(None);
         }
     }
 
+    /// Mark one node selected if pointer position same as this node position.
     pub fn handle_node_selection(&mut self, graph: &mut Graph) {
         if let Some(pointer_pos) = self.response().interact_pointer_pos() {
             for (id, node) in graph.nodes() {
@@ -124,6 +129,7 @@ impl Canvas {
         }
     }
 
+    /// Draw node.
     pub fn draw_node(&self, node: &Node) {
         self.painter()
             .circle(node.position, node.radius, node.color, Stroke::NONE);
@@ -143,6 +149,7 @@ impl Canvas {
         );
     }
 
+    /// Draw all nodes.
     pub fn draw_nodes(&mut self, graph: &Graph) {
         for node in graph.nodes().values() {
             self.draw_node(node);
@@ -152,6 +159,7 @@ impl Canvas {
 
 // edges
 impl Canvas {
+    /// Handle edge creation.
     /// Return true if edge was created
     pub fn handle_edge_creation(&mut self, graph: &mut Graph) -> bool {
         // if Escape pressed => we dont' creating edge anymore
@@ -164,6 +172,7 @@ impl Canvas {
             return false;
         }
 
+        // if right mouse button was not clicked => ignore
         if !self.response().secondary_clicked() {
             return false;
         }
@@ -171,6 +180,8 @@ impl Canvas {
         if let Some(edge_start) = self.new_edge_start {
             let pointer_pos = self.response().interact_pointer_pos().unwrap();
 
+            // if some node has same pos as pointer
+            // then creating edge (edge_start; node)
             for (id, node) in graph.nodes() {
                 if node.position.distance(pointer_pos) < node.radius {
                     graph.add_edge(Edge::new(edge_start, *id));
@@ -184,9 +195,14 @@ impl Canvas {
         false
     }
 
+    /// Handle setting start of edge (first selected node).
+    /// (Edge is not created at this moment)
     pub fn handle_setting_edge_start(&mut self, graph: &Graph) {
         if self.response().secondary_clicked() {
             let pointer_pos = self.response().interact_pointer_pos().unwrap();
+
+            // if some node has same pos as pointer
+            // then set edge start as node id
             for (id, node) in graph.nodes() {
                 if node.position.distance(pointer_pos) < node.radius {
                     self.new_edge_start = Some(*id);
@@ -196,6 +212,7 @@ impl Canvas {
         }
     }
 
+    /// Draw possible edge from new_edge_start node to pointer pos.
     pub fn draw_possible_edge(&mut self, graph: &Graph) {
         if let (Some(edge_start), Some(pointer_pos)) =
             (self.new_edge_start, self.response().hover_pos())
@@ -226,6 +243,7 @@ impl Canvas {
         }
     }
 
+    /// Calculate border intersection to draw an edge on the boundary of nodes
     fn calculate_border_intersection(&self, node1: &Node, node2: &Node) -> (Pos2, Pos2) {
         let direction = (node2.position - node1.position).normalized();
 
@@ -235,6 +253,7 @@ impl Canvas {
         (start, end)
     }
 
+    /// Draw edge label.
     fn draw_edge_label(&self, ui: &mut Ui, edge: &Edge, start: Pos2, control: Pos2, end: Pos2) {
         let text = WidgetText::RichText(RichText::new(&edge.label).size(edge.label_size));
         let text_galley = text.into_galley(ui, None, f32::INFINITY, FontSelection::Default);
@@ -242,6 +261,7 @@ impl Canvas {
 
         let direction = (end - start).normalized();
         let angle = if direction.x <= 0.0 {
+            // add PI to autorotate label
             direction.angle() + std::f32::consts::PI
         } else {
             direction.angle()
@@ -264,6 +284,7 @@ impl Canvas {
         );
     }
 
+    /// Draw edge arrow (for oriented edges).
     fn draw_arrow(&self, start: Pos2, end: Pos2, color: Rgba, width: f32) {
         let direction = (end - start).normalized();
         let rotation = Rot2::from_angle(ARROW_HALF_ANGLE);
@@ -288,25 +309,35 @@ impl Canvas {
         center_pos + rotated
     }
 
+    /// Draw loop edge
     fn draw_loop(&self, ui: &mut Ui, graph: &Graph, edge: &Edge, shift: f32) {
         let node = &graph.nodes()[&edge.start_id];
 
         let rotation_angle = edge.loop_rotation_angle.to_radians();
+
+        // Calculate border points based on rotation angle.
+        // Start point is north of node + rotation angle.
         let start = self.rotate_border_point(
             node.position - Vec2::new(0.0, node.radius),
             node.position,
             rotation_angle,
         );
+        // End point is west of node + rotation angle.
         let end = self.rotate_border_point(
             node.position - Vec2::new(node.radius, 0.0),
             node.position,
             rotation_angle,
         );
 
+        // Calc direction of vectors:
+        // direction1: start -> node.center (node.position)
         let direction1 = (node.position - start).normalized();
+        // direction2: end   -> node.center (node.position)
         let direction2 = (node.position - end).normalized();
 
+        // Calc offset based on node size and shift (possible multiple loops)
         let offset = CONTROL_OFFSET * (node.radius / MIN_NODE_RADIUS) * (1.0 + shift);
+        // Calc controls for curve
         let control1 = start - direction1 * offset;
         let control2 = end - direction2 * offset;
 
@@ -316,16 +347,19 @@ impl Canvas {
             Color32::TRANSPARENT,
             Stroke::new(edge.width, edge.color),
         );
-        let curve_control = curve.sample(0.5);
+
+        // Calc curve middle to place label in center of edge
+        let curve_middle = curve.sample(0.5);
         self.painter().add(curve);
 
         if !edge.label.is_empty() {
-            self.draw_edge_label(ui, edge, start, curve_control, end);
+            self.draw_edge_label(ui, edge, start, curve_middle, end);
         }
     }
 
+    /// Draw edge.
     fn draw_edge(&self, ui: &mut Ui, graph: &Graph, edge: &Edge, shift: f32) {
-        let d = if edge.start_id < edge.end_id {
+        let edge_order = if edge.start_id < edge.end_id {
             -1.0
         } else {
             1.0
@@ -333,11 +367,16 @@ impl Canvas {
 
         let (node_start, node_end) = (&graph.nodes()[&edge.start_id], &graph.nodes()[&edge.end_id]);
         let (start, end) = self.calculate_border_intersection(node_start, node_end);
-        let start = self.rotate_border_point(start, node_start.position, DELTA_ANGLE * shift * d);
-        let end = self.rotate_border_point(end, node_end.position, -DELTA_ANGLE * shift * d);
 
-        let direction = d * (start - end).normalized();
+        // Calc edge start and end to avoid edges overlaping
+        // based on shift and edge_order
+        let start =
+            self.rotate_border_point(start, node_start.position, DELTA_ANGLE * shift * edge_order);
+        let end =
+            self.rotate_border_point(end, node_end.position, -DELTA_ANGLE * shift * edge_order);
 
+        // Calc edge control for curve
+        let direction = edge_order * (start - end).normalized();
         let midpoint = Pos2::new((start.x + end.x) / 2.0, (start.y + end.y) / 2.0);
         let control = midpoint + direction.rot90() * shift * CONTROL_OFFSET;
 
@@ -347,6 +386,8 @@ impl Canvas {
             Color32::TRANSPARENT,
             Stroke::new(edge.width, edge.color),
         );
+
+        // Calc curve middle to place label in center of edge
         let curve_control = curve.sample(0.5);
         self.painter().add(curve);
 
@@ -359,18 +400,19 @@ impl Canvas {
         }
     }
 
+    /// Draw all edges.
     pub fn draw_edges(&mut self, ui: &mut Ui, graph: &Graph) {
         let mut grouped_edges = HashMap::<(NodeId, NodeId), Vec<&Edge>>::new();
 
         for edge in graph.edges().values() {
-            let group_key = if edge.start_id < edge.end_id {
+            let edge_order = if edge.start_id < edge.end_id {
                 (edge.start_id, edge.end_id)
             } else {
                 (edge.end_id, edge.start_id)
             };
 
             grouped_edges
-                .entry(group_key)
+                .entry(edge_order)
                 .and_modify(|v| v.push(edge))
                 .or_insert(vec![edge]);
         }
@@ -382,6 +424,7 @@ impl Canvas {
                     self.draw_loop(ui, graph, edge, index as f32);
                 }
             } else {
+                // Calc shifts to avoid edges overlapping
                 let edges_number = (edges.len() / 2) as isize;
                 let shifting =
                     (-edges_number..=edges_number).filter(|&n| edges.len() % 2 != 0 || n != 0);
@@ -406,12 +449,15 @@ impl Canvas {
         let pointer_pos = self.response().interact_pointer_pos();
 
         let current_line = comment_lines.last_added_mut().unwrap();
+
         // update selected params
         if current_line.is_empty() {
             current_line.stroke = stroke;
         }
 
         if let Some(pointer_pos) = pointer_pos {
+            // if last point of line is not in pointer_pos
+            // => line is extended (added segment)
             if current_line.points.last() != Some(&pointer_pos) {
                 current_line.points.push(pointer_pos);
             }
@@ -420,15 +466,21 @@ impl Canvas {
         }
     }
 
+    /// Orientation of a, b, c.
+    /// - `0`  - collinear (lie on the same line)
+    /// - `1`  - clockwise rotation
+    /// - `-1` - counterclockwise rotation
     fn orientation(&self, a: Pos2, b: Pos2, c: Pos2) -> i32 {
         let value = (b.y - a.y) * (c.x - a.x) - (b.x - a.x) * (c.y - b.y);
         value.signum() as i32
     }
 
+    /// Check if b is on (a; c) segment
     fn on_segment(&self, a: Pos2, b: Pos2, c: Pos2) -> bool {
         b.x >= a.x.min(c.x) && b.x <= a.x.max(c.x) && b.y >= a.y.min(c.y) && b.y <= a.y.max(c.y)
     }
 
+    /// Check if segments (a; b) and (c; d) are intersecting
     fn segments_intersect(&self, a: Pos2, b: Pos2, c: Pos2, d: Pos2) -> bool {
         let o1 = self.orientation(a, b, c);
         let o2 = self.orientation(a, b, d);
@@ -445,6 +497,7 @@ impl Canvas {
             || (o4 == 0 && self.on_segment(c, b, d))
     }
 
+    /// Check if `comment_line` is intersect line
     fn is_intersect(&self, comment_line: &CommentLine, line: [Pos2; 2]) -> bool {
         let c = line[0];
         let d = line[1];
@@ -461,6 +514,7 @@ impl Canvas {
         false
     }
 
+    /// Check if square is intersect `comment_line`
     pub fn is_intersect_square(&self, comment_line: &CommentLine, square: Rect) -> bool {
         let square_edges = [
             [square.left_top(), square.right_top()],
@@ -489,32 +543,37 @@ impl Canvas {
 
         self.set_cursor_icon(egui::CursorIcon::None);
 
+        // Create eraser square in hover_pos
         let square_center = self.response().hover_pos().unwrap();
-        let square = Rect::from_center_size(square_center, Vec2::new(10.0, 10.0));
+        let hover_square = Rect::from_center_size(square_center, Vec2::new(10.0, 10.0));
 
         self.painter()
-            .rect_stroke(square, 0.0, Stroke::new(1.0, Color32::BLACK));
+            .rect_stroke(hover_square, 0.0, Stroke::new(1.0, Color32::BLACK));
 
         if let Some(pointer_pos) = self.response().interact_pointer_pos() {
-            let square = Rect::from_center_size(pointer_pos, Vec2::new(10.0, 10.0));
+            // Create eraser square in pointer_pos
+            let interact_square = Rect::from_center_size(pointer_pos, Vec2::new(10.0, 10.0));
 
             self.painter()
-                .rect_stroke(square, 0.0, Stroke::new(1.0, Color32::BLACK));
+                .rect_stroke(interact_square, 0.0, Stroke::new(1.0, Color32::BLACK));
 
+            // Find comment_line intersected by interact_square
             let mut selected_line_id = None;
             for (id, line) in comment_lines.iter() {
-                if self.is_intersect_square(line, square) {
+                if self.is_intersect_square(line, interact_square) {
                     selected_line_id = Some(id);
                     break;
                 }
             }
 
+            // Erase comment_line intersected by interact_square
             if let Some(id) = selected_line_id {
                 comment_lines.remove(*id);
             }
         }
     }
 
+    // Draw all comment lines.
     pub fn draw_comment_lines(&self, comment_lines: &CommentsGroup) {
         let lines = comment_lines
             .iter()
