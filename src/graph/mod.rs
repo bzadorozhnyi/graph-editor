@@ -15,7 +15,7 @@ pub struct Graph {
     edges: BTreeMap<EdgeId, Edge>,
     selected_node_id: Option<NodeId>,
     selected_edge_id: Option<EdgeId>,
-    dragging: Option<NodeId>,
+    dragging_node_id: Option<NodeId>,
     node_id_counter: usize,
     edge_id_counter: usize,
 }
@@ -55,12 +55,12 @@ impl Graph {
         self.edges.insert(EdgeId(edge_id), edge);
     }
 
-    pub fn dragging(&self) -> Option<NodeId> {
-        self.dragging
+    pub fn dragging_node(&self) -> Option<NodeId> {
+        self.dragging_node_id
     }
 
-    pub fn set_dragging(&mut self, dragging: Option<NodeId>) {
-        self.dragging = dragging;
+    pub fn set_dragging_node(&mut self, dragging: Option<NodeId>) {
+        self.dragging_node_id = dragging;
     }
 
     pub fn selected_node_mut(&mut self) -> Option<&mut Node> {
@@ -109,9 +109,9 @@ impl Graph {
             }
         }
 
-        if let Some(dragging_id) = self.dragging {
+        if let Some(dragging_id) = self.dragging_node_id {
             if id == dragging_id {
-                self.dragging = None;
+                self.dragging_node_id = None;
             }
         }
 

@@ -94,7 +94,7 @@ impl Canvas {
         if let Some(pointer_pos) = self.response().interact_pointer_pos() {
             self.set_cursor_icon(egui::CursorIcon::Grabbing);
 
-            if let Some(id) = graph.dragging() {
+            if let Some(id) = graph.dragging_node() {
                 let node = graph.nodes().get(&id).unwrap();
                 graph.node_mut(&id).unwrap().position =
                     self.bounds_constraint_correction(node, pointer_pos);
@@ -104,12 +104,12 @@ impl Canvas {
 
             for (id, node) in graph.nodes().iter() {
                 if node.position.distance(pointer_pos) < node.radius {
-                    graph.set_dragging(Some(*id));
+                    graph.set_dragging_node(Some(*id));
                     break;
                 }
             }
         } else {
-            graph.set_dragging(None);
+            graph.set_dragging_node(None);
         }
     }
 
