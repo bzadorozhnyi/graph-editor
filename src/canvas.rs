@@ -222,11 +222,17 @@ impl Canvas {
 
             if start_node.position.distance(pointer_pos) < start_node.radius {
                 // draw loop
+                // Start point is north of node
                 let start_pos = start_node.position - Vec2::new(0.0, start_node.radius);
+                // End point is west of node
                 let end_pos = start_node.position - Vec2::new(start_node.radius, 0.0);
 
-                let control1 = start_pos - Vec2::new(0.0, CONTROL_OFFSET);
-                let control2 = end_pos - Vec2::new(CONTROL_OFFSET, 0.0);
+                // Calc offset based on node size
+                let offset = CONTROL_OFFSET * (start_node.radius / MIN_NODE_RADIUS);
+
+                // Calc controls for curve
+                let control1 = start_pos - Vec2::new(0.0, offset);
+                let control2 = end_pos - Vec2::new(offset, 0.0);
 
                 self.painter().add(CubicBezierShape::from_points_stroke(
                     [start_pos, control1, control2, end_pos],
