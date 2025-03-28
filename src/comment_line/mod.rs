@@ -1,7 +1,9 @@
 use eframe::egui::{Color32, Pos2, Rect, Rgba, Stroke};
+use orientation::Orientation;
 
 pub mod editor;
 pub mod group;
+pub mod orientation;
 
 #[derive(Debug)]
 pub struct CommentLine {
@@ -30,12 +32,15 @@ impl CommentLine {
     }
 
     /// Orientation of a, b, c.
-    /// - `0`  - collinear (lie on the same line)
-    /// - `1`  - clockwise rotation
-    /// - `-1` - counterclockwise rotation
-    fn orientation(&self, a: Pos2, b: Pos2, c: Pos2) -> i32 {
+    fn orientation(&self, a: Pos2, b: Pos2, c: Pos2) -> Orientation {
         let value = (b.y - a.y) * (c.x - a.x) - (b.x - a.x) * (c.y - b.y);
-        value.signum() as i32
+
+        match value.signum() as i32 {
+            0 => Orientation::Collinear,
+            1 => Orientation::Clockwise,
+            -1 => Orientation::CounterClockwise,
+            _ => unreachable!(),
+        }
     }
 
     /// Check if b is on (a; c) segment
@@ -54,10 +59,10 @@ impl CommentLine {
             return true;
         }
 
-        (o1 == 0 && self.on_segment(a, c, b))
-            || (o2 == 0 && self.on_segment(a, d, b))
-            || (o3 == 0 && self.on_segment(c, a, d))
-            || (o4 == 0 && self.on_segment(c, b, d))
+        (o1 == Orientation::Collinear && self.on_segment(a, c, b))
+            || (o2 == Orientation::Collinear && self.on_segment(a, d, b))
+            || (o3 == Orientation::Collinear && self.on_segment(c, a, d))
+            || (o4 == Orientation::Collinear && self.on_segment(c, b, d))
     }
 
     /// Check if `comment_line` is intersect line
@@ -87,11 +92,7 @@ impl CommentLine {
         ];
 
         for point in &self.points {
-            if square.contains(*point)
-                || square_edges
-                    .iter()
-                    .any(|edge| self.is_intersect(*edge))
-            {
+            if square.contains(*point) || square_edges.iter().any(|edge| self.is_intersect(*edge)) {
                 return true;
             }
         }
