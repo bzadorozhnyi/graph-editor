@@ -41,11 +41,13 @@ impl Graph {
         self.edges.get_mut(id)
     }
 
-    pub fn add_node(&mut self, node: Node) {
-        let node_id = self.node_id_counter;
+    pub fn add_node(&mut self) {
         self.node_id_counter += 1;
+        let node_id = self.node_id_counter;
 
-        self.nodes.insert(NodeId(node_id), node);
+        let new_node = Node::new(node_id.to_string());
+
+        self.nodes.insert(NodeId(node_id), new_node);
     }
 
     pub fn add_edge(&mut self, edge: Edge) {

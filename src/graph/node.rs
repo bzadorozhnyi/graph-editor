@@ -29,7 +29,10 @@ impl Default for Node {
 }
 
 impl Node {
-    pub fn new() -> Self {
-        Default::default()
+    pub fn new(label: String) -> Self {
+        Self {
+            label,
+            ..Default::default()
+        }
     }
 }
