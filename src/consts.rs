@@ -9,6 +9,9 @@ pub const MAX_NODE_LABEL_SIZE: f32 = 100.0;
 pub const MIN_NODE_RADIUS: f32 = 20.0;
 pub const MAX_NODE_RADIUS: f32 = 100.0;
 
+pub const DEFAULT_NODE_X_POSITION: f32 = 100.0;
+pub const DEFAULT_NODE_Y_POSITION: f32 = 100.0;
+
 pub const MIN_EDGE_WIDTH: f32 = 2.0;
 pub const MAX_EDGE_WIDTH: f32 = 5.0;
 
