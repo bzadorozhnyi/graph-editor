@@ -92,28 +92,32 @@ impl Canvas {
 
     /// Handle node dragging.
     pub fn handle_node_draging(&mut self, graph: &mut Graph) {
-        if let Some(pointer_pos) = self.response().interact_pointer_pos() {
-            self.set_cursor_icon(egui::CursorIcon::Grabbing);
-
-            // drag selected node to poiter pos
-            if let Some(id) = graph.dragging_node() {
-                let node = graph.nodes().get(&id).unwrap();
-                graph.node_mut(&id).unwrap().position =
-                    self.bounds_constraint_correction(node, pointer_pos);
-
+        let pointer_pos = match self.response().interact_pointer_pos() {
+            Some(pos) => pos,
+            None => {
+                // any node is not node dragging
+                graph.set_dragging_node(None);
                 return;
             }
+        };
 
-            // if pointer pos is the same as some node => mark node as dragging node
-            for (id, node) in graph.nodes().iter() {
-                if node.position.distance(pointer_pos) < node.radius {
-                    graph.set_dragging_node(Some(*id));
-                    break;
-                }
+        self.set_cursor_icon(egui::CursorIcon::Grabbing);
+
+        // drag selected node to poiter pos
+        if let Some(id) = graph.dragging_node() {
+            let node = graph.nodes().get(&id).unwrap();
+            graph.node_mut(&id).unwrap().position =
+                self.bounds_constraint_correction(node, pointer_pos);
+
+            return;
+        }
+
+        // if pointer pos is the same as some node => mark node as dragging node
+        for (id, node) in graph.nodes().iter() {
+            if node.position.distance(pointer_pos) < node.radius {
+                graph.set_dragging_node(Some(*id));
+                break;
             }
-        } else {
-            // any node is not node dragging
-            graph.set_dragging_node(None);
         }
     }
 
@@ -473,14 +477,14 @@ impl Canvas {
     }
 
     pub fn handle_comment_erase(&mut self, comment_lines: &mut CommentsGroup) {
-        if self.response().hover_pos().is_none() {
-            return;
-        }
+        let square_center = match self.response().hover_pos() {
+            Some(center) => center,
+            None => return,
+        };
 
         self.set_cursor_icon(egui::CursorIcon::None);
 
         // Create eraser square in hover_pos
-        let square_center = self.response().hover_pos().unwrap();
         let hover_square = Rect::from_center_size(square_center, Vec2::new(10.0, 10.0));
 
         self.painter()
