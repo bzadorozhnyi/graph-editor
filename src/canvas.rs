@@ -188,7 +188,7 @@ impl Canvas {
             // then creating edge (edge_start; node)
             for (id, node) in graph.nodes() {
                 if node.position.distance(pointer_pos) < node.radius {
-                    graph.add_edge(Edge::new(edge_start, *id));
+                    graph.add_edge(edge_start, *id);
                     self.new_edge_start = None;
 
                     return true;

@@ -50,11 +50,13 @@ impl Graph {
         self.nodes.insert(NodeId(node_id), new_node);
     }
 
-    pub fn add_edge(&mut self, edge: Edge) {
-        let edge_id = self.edge_id_counter;
+    pub fn add_edge(&mut self, start_id: NodeId, end_id: NodeId) {
         self.edge_id_counter += 1;
+        let edge_id = self.edge_id_counter;
 
-        self.edges.insert(EdgeId(edge_id), edge);
+        let new_edge = Edge::new(start_id, end_id);
+
+        self.edges.insert(EdgeId(edge_id), new_edge);
     }
 
     pub fn dragging_node(&self) -> Option<NodeId> {

@@ -25,10 +25,10 @@ pub struct Edge {
 }
 
 impl Edge {
-    pub fn new(start_index: NodeId, end_index: NodeId) -> Self {
+    pub fn new(start_id: NodeId, end_id: NodeId) -> Self {
         Self {
-            start_id: start_index,
-            end_id: end_index,
+            start_id,
+            end_id,
             oriented: true,
             color: Rgba::from(Color32::BLACK),
             label: String::new(),
