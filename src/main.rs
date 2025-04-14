@@ -4,7 +4,7 @@ use graph_editor_egui::{
     comment_line::{editor::CommentsEditor, group::CommentsGroup},
     edge_editor::EdgeEditor,
     edges_table::EdgesTable,
-    graph::{Graph, Node},
+    graph::Graph,
     node_editor::NodeEditor,
 };
 
@@ -63,7 +63,7 @@ impl eframe::App for MyApp {
                 .show(ui, |ui| {
                     egui::menu::bar(ui, |ui| {
                         if ui.button("New").clicked() {
-                            self.graph.add_node(Node::new());
+                            self.graph.add_node();
                         }
                         ui.selectable_value(&mut self.selected_editor, Editor::Node, "Node");
                         ui.selectable_value(&mut self.selected_editor, Editor::Edge, "Edge");
