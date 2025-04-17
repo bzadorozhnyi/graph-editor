@@ -487,15 +487,23 @@ impl Canvas {
         // Create eraser square in hover_pos
         let hover_square = Rect::from_center_size(square_center, Vec2::new(10.0, 10.0));
 
-        self.painter()
-            .rect_stroke(hover_square, 0.0, Stroke::new(1.0, Color32::BLACK));
+        self.painter().rect_stroke(
+            hover_square,
+            0.0,
+            Stroke::new(1.0, Color32::BLACK),
+            egui::StrokeKind::Outside,
+        );
 
         if let Some(pointer_pos) = self.response().interact_pointer_pos() {
             // Create eraser square in pointer_pos
             let interact_square = Rect::from_center_size(pointer_pos, Vec2::new(10.0, 10.0));
 
-            self.painter()
-                .rect_stroke(interact_square, 0.0, Stroke::new(1.0, Color32::BLACK));
+            self.painter().rect_stroke(
+                interact_square,
+                0.0,
+                Stroke::new(1.0, Color32::BLACK),
+                egui::StrokeKind::Outside,
+            );
 
             // Find comment_line intersected by interact_square
             let mut selected_line_id = None;

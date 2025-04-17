@@ -67,7 +67,7 @@ impl EdgesTable {
                     });
                     row.col(|ui| {
                         frame::Frame::default()
-                            .inner_margin(Margin::symmetric(2.0, 0.0))
+                            .inner_margin(Margin::symmetric(2, 0))
                             .show(ui, |ui| {
                                 ui.text_edit_singleline(
                                     &mut graph.edge_mut(edge_id).unwrap().label,

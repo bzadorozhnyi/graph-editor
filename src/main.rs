@@ -55,11 +55,11 @@ impl Default for MyApp {
 }
 
 impl eframe::App for MyApp {
-    fn update(&mut self, ctx: &eframe::egui::Context, _frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             let right_panel_width = 250.0;
-            egui::Frame::none()
-                .inner_margin(Margin::symmetric(8.0, 0.0))
+            egui::Frame::new()
+                .inner_margin(Margin::symmetric(8, 0))
                 .show(ui, |ui| {
                     egui::menu::bar(ui, |ui| {
                         if ui.button("New").clicked() {
@@ -78,8 +78,8 @@ impl eframe::App for MyApp {
             SidePanel::right("menu_panel")
                 .exact_width(right_panel_width)
                 .show(ctx, |ui| {
-                    egui::Frame::none()
-                        .inner_margin(Margin::same(4.0))
+                    egui::Frame::new()
+                        .inner_margin(Margin::same(4))
                         .show(ui, |ui| match self.selected_editor {
                             Editor::Node => {
                                 self.node_editor.ui(ui, &mut self.graph);
