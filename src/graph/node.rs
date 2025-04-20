@@ -1,13 +1,14 @@
 use eframe::egui::{Color32, Pos2, Rgba};
+use serde::{Deserialize, Serialize};
 
 use crate::consts::{
     DEFAULT_NODE_X_POSITION, DEFAULT_NODE_Y_POSITION, MIN_NODE_LABEL_SIZE, MIN_NODE_RADIUS,
 };
 
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Serialize, Deserialize)]
 pub struct NodeId(pub usize);
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Node {
     pub position: Pos2,
     pub radius: f32,

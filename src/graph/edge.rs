@@ -1,4 +1,5 @@
 use eframe::egui::{Color32, Rgba};
+use serde::{Deserialize, Serialize};
 
 use crate::consts::{
     MAX_EDGE_LABEL_PADDING, MIN_EDGE_LABEL_PADDING, MIN_EDGE_LABEL_SIZE, MIN_EDGE_WIDTH,
@@ -7,10 +8,10 @@ use crate::consts::{
 
 use super::NodeId;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct EdgeId(pub usize);
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Edge {
     pub start_id: NodeId,
     pub end_id: NodeId,
