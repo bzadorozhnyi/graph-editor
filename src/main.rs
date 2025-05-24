@@ -74,57 +74,14 @@ impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             self.show_menu(ui);
-
-            SidePanel::right("menu_panel")
-                .exact_width(250.0)
-                .show(ctx, |ui| {
-                    egui::Frame::new()
-                        .inner_margin(Margin::same(4))
-                        .show(ui, |ui| match self.selected_editor {
-                            Editor::Node => {
-                                self.node_editor.ui(ui, &mut self.graph);
-                            }
-                            Editor::Edge => {
-                                self.edge_editor.ui(ui, &mut self.graph);
-                            }
-                            Editor::CommentLine => {
-                                self.comments_editor.ui(ui, &mut self.comment_lines);
-                            }
-                        });
-                });
-
-            egui::TopBottomPanel::bottom("bottom_panel")
-                .resizable(true)
-                .min_height(10.0)
-                .show_separator_line(true)
-                .show(ctx, |ui| {
-                    self.edges_table.ui(ui, &mut self.graph);
-                });
+            self.show_editor_panel(ui);
+            self.show_edges_panel(ui);
 
             self.handle_file_operation(ui);
 
             self.canvas.setup(ctx, ui);
 
-            if self.selected_editor == Editor::CommentLine {
-                if self.comments_editor.draw_mode_active() {
-                    self.canvas.handle_comment_draw(
-                        self.comments_editor.selected_stroke(),
-                        &mut self.comment_lines,
-                    );
-                }
-                if self.comments_editor.erase_mode_active() {
-                    self.canvas.handle_comment_erase(&mut self.comment_lines);
-                }
-            } else {
-                self.canvas.handle_node_draging(&mut self.graph);
-                self.canvas.handle_node_selection(&mut self.graph);
-
-                let edge_created = self.canvas.handle_edge_creation(&mut self.graph);
-                // if edge_created is true => we clicked on edge's end => ignore this
-                if !edge_created {
-                    self.canvas.handle_setting_edge_start(&self.graph);
-                }
-            }
+            self.handle_interaction_logic();
 
             self.canvas.draw_possible_edge(&self.graph);
             self.canvas.draw_edges(ui, &self.graph);
@@ -166,6 +123,36 @@ impl MyApp {
             });
     }
 
+    fn show_editor_panel(&mut self, ui: &mut Ui) {
+        SidePanel::right("editor_panel")
+            .exact_width(250.0)
+            .show(ui.ctx(), |ui| {
+                egui::Frame::new()
+                    .inner_margin(Margin::same(4))
+                    .show(ui, |ui| match self.selected_editor {
+                        Editor::Node => {
+                            self.node_editor.ui(ui, &mut self.graph);
+                        }
+                        Editor::Edge => {
+                            self.edge_editor.ui(ui, &mut self.graph);
+                        }
+                        Editor::CommentLine => {
+                            self.comments_editor.ui(ui, &mut self.comment_lines);
+                        }
+                    });
+            });
+    }
+
+    fn show_edges_panel(&mut self, ui: &mut Ui) {
+        egui::TopBottomPanel::bottom("edges_panel")
+            .resizable(true)
+            .min_height(10.0)
+            .show_separator_line(true)
+            .show(ui.ctx(), |ui| {
+                self.edges_table.ui(ui, &mut self.graph);
+            });
+    }
+
     fn handle_file_operation(&mut self, ui: &mut Ui) {
         self.file_dialog.update(ui.ctx());
 
@@ -196,6 +183,29 @@ impl MyApp {
                 FileOperation::None => {}
             }
             self.file_operation = FileOperation::None;
+        }
+    }
+
+    fn handle_interaction_logic(&mut self) {
+        if self.selected_editor == Editor::CommentLine {
+            if self.comments_editor.draw_mode_active() {
+                self.canvas.handle_comment_draw(
+                    self.comments_editor.selected_stroke(),
+                    &mut self.comment_lines,
+                );
+            }
+            if self.comments_editor.erase_mode_active() {
+                self.canvas.handle_comment_erase(&mut self.comment_lines);
+            }
+        } else {
+            self.canvas.handle_node_draging(&mut self.graph);
+            self.canvas.handle_node_selection(&mut self.graph);
+
+            let edge_created = self.canvas.handle_edge_creation(&mut self.graph);
+            // if edge_created is true => we clicked on edge's end => ignore this
+            if !edge_created {
+                self.canvas.handle_setting_edge_start(&self.graph);
+            }
         }
     }
 }
