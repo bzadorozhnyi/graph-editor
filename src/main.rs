@@ -1,4 +1,10 @@
-use eframe::egui::{self, Margin, SidePanel};
+use std::{
+    fs::File,
+    io::{BufReader, Write},
+};
+
+use eframe::egui::{self, Margin, SidePanel, Ui};
+use egui_file_dialog::FileDialog;
 use graph_editor_egui::{
     canvas::Canvas,
     comment_line::{editor::CommentsEditor, group::CommentsGroup},
@@ -28,6 +34,12 @@ enum Editor {
     CommentLine,
 }
 
+enum FileOperation {
+    Open,
+    Save,
+    None,
+}
+
 struct MyApp {
     graph: Graph,
     comment_lines: CommentsGroup,
@@ -37,6 +49,8 @@ struct MyApp {
     edge_editor: EdgeEditor,
     comments_editor: CommentsEditor,
     selected_editor: Editor,
+    file_dialog: FileDialog,
+    file_operation: FileOperation,
 }
 
 impl Default for MyApp {
@@ -50,6 +64,8 @@ impl Default for MyApp {
             edge_editor: EdgeEditor,
             comments_editor: CommentsEditor::new(),
             selected_editor: Editor::Node,
+            file_dialog: FileDialog::new(),
+            file_operation: FileOperation::None,
         }
     }
 }
@@ -57,26 +73,10 @@ impl Default for MyApp {
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            let right_panel_width = 250.0;
-            egui::Frame::new()
-                .inner_margin(Margin::symmetric(8, 0))
-                .show(ui, |ui| {
-                    egui::menu::bar(ui, |ui| {
-                        if ui.button("New").clicked() {
-                            self.graph.add_node();
-                        }
-                        ui.selectable_value(&mut self.selected_editor, Editor::Node, "Node");
-                        ui.selectable_value(&mut self.selected_editor, Editor::Edge, "Edge");
-                        ui.selectable_value(
-                            &mut self.selected_editor,
-                            Editor::CommentLine,
-                            "Comment line",
-                        );
-                    });
-                });
+            self.show_menu(ui);
 
             SidePanel::right("menu_panel")
-                .exact_width(right_panel_width)
+                .exact_width(250.0)
                 .show(ctx, |ui| {
                     egui::Frame::new()
                         .inner_margin(Margin::same(4))
@@ -100,6 +100,8 @@ impl eframe::App for MyApp {
                 .show(ctx, |ui| {
                     self.edges_table.ui(ui, &mut self.graph);
                 });
+
+            self.handle_file_operation(ui);
 
             self.canvas.setup(ctx, ui);
 
@@ -129,5 +131,71 @@ impl eframe::App for MyApp {
             self.canvas.draw_nodes(&self.graph);
             self.canvas.draw_comment_lines(&self.comment_lines);
         });
+    }
+}
+
+impl MyApp {
+    fn show_menu(&mut self, ui: &mut Ui) {
+        egui::Frame::new()
+            .inner_margin(Margin::symmetric(8, 0))
+            .show(ui, |ui| {
+                // TODO: Move menu to separated component
+                egui::menu::bar(ui, |ui| {
+                    ui.menu_button("File", |ui| {
+                        if ui.button("Save").clicked() {
+                            self.file_operation = FileOperation::Save;
+                            self.file_dialog.save_file();
+                        }
+                        if ui.button("Open").clicked() {
+                            self.file_operation = FileOperation::Open;
+                            self.file_dialog.pick_file();
+                        }
+                    });
+
+                    if ui.button("New").clicked() {
+                        self.graph.add_node();
+                    }
+                    ui.selectable_value(&mut self.selected_editor, Editor::Node, "Node");
+                    ui.selectable_value(&mut self.selected_editor, Editor::Edge, "Edge");
+                    ui.selectable_value(
+                        &mut self.selected_editor,
+                        Editor::CommentLine,
+                        "Comment line",
+                    );
+                });
+            });
+    }
+
+    fn handle_file_operation(&mut self, ui: &mut Ui) {
+        self.file_dialog.update(ui.ctx());
+
+        if let Some(file_path) = self.file_dialog.take_picked() {
+            match self.file_operation {
+                FileOperation::Open => {
+                    let file = File::open(file_path).unwrap();
+                    let reader = BufReader::new(file);
+
+                    // TODO: check if operation successful
+                    self.graph = serde_json::from_reader(reader).unwrap();
+                }
+                FileOperation::Save => {
+                    let graph_json = serde_json::to_string_pretty(&self.graph);
+
+                    match graph_json {
+                        Ok(value) => {
+                            let mut file = File::create(file_path).unwrap();
+                            // TODO: check if operation successful
+                            file.write_all(value.as_bytes()).unwrap();
+                        }
+                        Err(_) => {
+                            // TODO: replace with pop-up message
+                            println!("Not saved")
+                        }
+                    }
+                }
+                FileOperation::None => {}
+            }
+            self.file_operation = FileOperation::None;
+        }
     }
 }
