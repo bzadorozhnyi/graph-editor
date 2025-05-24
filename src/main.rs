@@ -91,34 +91,29 @@ impl eframe::App for MyApp {
 
 impl MyApp {
     fn show_menu(&mut self, ui: &mut Ui) {
-        egui::Frame::new()
-            .inner_margin(Margin::symmetric(8, 0))
-            .show(ui, |ui| {
-                // TODO: Move menu to separated component
-                egui::menu::bar(ui, |ui| {
-                    ui.menu_button("File", |ui| {
-                        if ui.button("Save").clicked() {
-                            self.file_operation = FileOperation::Save;
-                            self.file_dialog.save_file();
-                        }
-                        if ui.button("Open").clicked() {
-                            self.file_operation = FileOperation::Open;
-                            self.file_dialog.pick_file();
-                        }
-                    });
-
-                    if ui.button("New").clicked() {
-                        self.graph.add_node();
-                    }
-                    ui.selectable_value(&mut self.selected_editor, Editor::Node, "Node");
-                    ui.selectable_value(&mut self.selected_editor, Editor::Edge, "Edge");
-                    ui.selectable_value(
-                        &mut self.selected_editor,
-                        Editor::CommentLine,
-                        "Comment line",
-                    );
-                });
+        egui::menu::bar(ui, |ui| {
+            ui.menu_button("File", |ui| {
+                if ui.button("Save").clicked() {
+                    self.file_operation = FileOperation::Save;
+                    self.file_dialog.save_file();
+                }
+                if ui.button("Open").clicked() {
+                    self.file_operation = FileOperation::Open;
+                    self.file_dialog.pick_file();
+                }
             });
+
+            if ui.button("New").clicked() {
+                self.graph.add_node();
+            }
+            ui.selectable_value(&mut self.selected_editor, Editor::Node, "Node");
+            ui.selectable_value(&mut self.selected_editor, Editor::Edge, "Edge");
+            ui.selectable_value(
+                &mut self.selected_editor,
+                Editor::CommentLine,
+                "Comment line",
+            );
+        });
     }
 
     fn show_editor_panel(&mut self, ui: &mut Ui) {

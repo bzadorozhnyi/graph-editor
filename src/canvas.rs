@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use eframe::{
     egui::{
-        self, Align2, Color32, FontFamily, FontId, FontSelection, Painter, Pos2, Rect, Response,
-        Rgba, RichText, Sense, Shape, Stroke, Ui, Vec2, WidgetText,
+        self, vec2, Align2, Color32, FontFamily, FontId, FontSelection, Painter, Pos2, Rect,
+        Response, Rgba, RichText, Sense, Shape, Stroke, Ui, Vec2, WidgetText,
     },
     emath::Rot2,
     epaint::{CubicBezierShape, QuadraticBezierShape, TextShape},
@@ -18,7 +18,6 @@ use crate::{
 pub struct Canvas {
     response: Option<Response>,
     painter: Option<Painter>,
-    painter_area: Rect,
     new_edge_start: Option<NodeId>,
 }
 
@@ -27,7 +26,6 @@ impl Default for Canvas {
         Self {
             response: None,
             painter: None,
-            painter_area: Rect::ZERO,
             new_edge_start: None,
         }
     }
@@ -52,11 +50,10 @@ impl Canvas {
     }
 
     pub fn setup(&mut self, ctx: &eframe::egui::Context, ui: &mut Ui) {
-        self.painter_area = ctx.available_rect().shrink(16.0);
-        let size = self.painter_area.size();
+        let size = ctx.available_rect().shrink2(vec2(8.0, 18.0)).size();
 
         let (response, painter) = ui.allocate_painter(size, Sense::click_and_drag());
-        painter.rect_filled(self.painter_area, 0.0, Color32::WHITE);
+        painter.rect_filled(response.rect, 0.0, Color32::WHITE);
 
         self.response = Some(response);
         self.painter = Some(painter);
@@ -71,18 +68,20 @@ impl Canvas {
 impl Canvas {
     /// Evaluate new position of node, which satisfy painter's bounds constraints
     fn bounds_constraint_correction(&self, node: &Node, pointer_pos: Pos2) -> Pos2 {
-        let new_x = if pointer_pos.x - node.radius < self.painter_area.min.x {
-            self.painter_area.min.x + node.radius
-        } else if pointer_pos.x + node.radius > self.painter_area.max.x {
-            self.painter_area.max.x - node.radius
+        let canvas_rect = self.response().rect;
+
+        let new_x = if pointer_pos.x - node.radius < canvas_rect.min.x {
+            canvas_rect.min.x + node.radius
+        } else if pointer_pos.x + node.radius > canvas_rect.max.x {
+            canvas_rect.max.x - node.radius
         } else {
             pointer_pos.x
         };
 
-        let new_y = if pointer_pos.y - node.radius < self.painter_area.min.y {
-            self.painter_area.min.y + node.radius
-        } else if pointer_pos.y + node.radius > self.painter_area.max.y {
-            self.painter_area.max.y - node.radius
+        let new_y = if pointer_pos.y - node.radius < canvas_rect.min.y {
+            canvas_rect.min.y + node.radius
+        } else if pointer_pos.y + node.radius > canvas_rect.max.y {
+            canvas_rect.max.y - node.radius
         } else {
             pointer_pos.y
         };
