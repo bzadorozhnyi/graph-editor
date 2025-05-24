@@ -23,7 +23,7 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Graph editor",
         native_options,
-        Box::new(|_cc| Ok(Box::<MyApp>::default())),
+        Box::new(|_cc| Ok(Box::<GraphEditor>::default())),
     )
 }
 
@@ -40,7 +40,7 @@ enum FileOperation {
     None,
 }
 
-struct MyApp {
+struct GraphEditor {
     graph: Graph,
     comment_lines: CommentsGroup,
     canvas: Canvas,
@@ -53,7 +53,7 @@ struct MyApp {
     file_operation: FileOperation,
 }
 
-impl Default for MyApp {
+impl Default for GraphEditor {
     fn default() -> Self {
         Self {
             graph: Graph::new(),
@@ -70,7 +70,7 @@ impl Default for MyApp {
     }
 }
 
-impl eframe::App for MyApp {
+impl eframe::App for GraphEditor {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             self.show_menu(ui);
@@ -89,7 +89,7 @@ impl eframe::App for MyApp {
     }
 }
 
-impl MyApp {
+impl GraphEditor {
     fn show_menu(&mut self, ui: &mut Ui) {
         egui::menu::bar(ui, |ui| {
             ui.menu_button("File", |ui| {
