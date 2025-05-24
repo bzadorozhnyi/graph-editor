@@ -134,7 +134,7 @@ impl Canvas {
     }
 
     /// Draw node.
-    pub fn draw_node(&self, node: &Node) {
+    fn draw_node(&self, node: &Node) {
         self.painter()
             .circle(node.position, node.radius, node.color, Stroke::NONE);
 
@@ -154,7 +154,7 @@ impl Canvas {
     }
 
     /// Draw all nodes.
-    pub fn draw_nodes(&mut self, graph: &Graph) {
+    fn draw_nodes(&mut self, graph: &Graph) {
         for node in graph.nodes().values() {
             self.draw_node(node);
         }
@@ -217,7 +217,7 @@ impl Canvas {
     }
 
     /// Draw possible edge from new_edge_start node to pointer pos.
-    pub fn draw_possible_edge(&mut self, graph: &Graph) {
+    fn draw_possible_edge(&mut self, graph: &Graph) {
         if let (Some(edge_start), Some(pointer_pos)) =
             (self.new_edge_start, self.response().hover_pos())
         {
@@ -411,7 +411,7 @@ impl Canvas {
     }
 
     /// Draw all edges.
-    pub fn draw_edges(&mut self, ui: &mut Ui, graph: &Graph) {
+    fn draw_edges(&mut self, ui: &mut Ui, graph: &Graph) {
         let mut grouped_edges = HashMap::<(NodeId, NodeId), Vec<&Edge>>::new();
 
         for edge in graph.edges().values() {
@@ -521,13 +521,21 @@ impl Canvas {
         }
     }
 
-    // Draw all comment lines.
-    pub fn draw_comment_lines(&self, comment_lines: &CommentsGroup) {
+    /// Draw all comment lines.
+    fn draw_comment_lines(&self, comment_lines: &CommentsGroup) {
         let lines = comment_lines
             .iter()
             .filter(|(_, line)| line.len() >= 2)
             .map(|(_, line)| egui::Shape::line(line.points.clone(), line.stroke));
 
         self.painter().extend(lines);
+    }
+
+    /// Draw possible edge, all nodes and edges, comment lines.
+    pub fn draw_components(&mut self, graph: &Graph, comment_lines: &CommentsGroup, ui: &mut Ui) {
+        self.draw_possible_edge(&graph);
+        self.draw_edges(ui, &graph);
+        self.draw_nodes(&graph);
+        self.draw_comment_lines(&comment_lines);
     }
 }

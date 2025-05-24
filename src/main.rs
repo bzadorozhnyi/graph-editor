@@ -83,10 +83,8 @@ impl eframe::App for MyApp {
 
             self.handle_interaction_logic();
 
-            self.canvas.draw_possible_edge(&self.graph);
-            self.canvas.draw_edges(ui, &self.graph);
-            self.canvas.draw_nodes(&self.graph);
-            self.canvas.draw_comment_lines(&self.comment_lines);
+            self.canvas
+                .draw_components(&self.graph, &self.comment_lines, ui);
         });
     }
 }
