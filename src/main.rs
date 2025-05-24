@@ -181,6 +181,8 @@ impl GraphEditor {
                             return Err(GraphEditorError::FailedSaveFile);
                         }
                     }
+
+                    self.toast = Some(Toast::success("Saved successfully"));
                 }
                 FileOperation::None => {}
             }
@@ -217,9 +219,13 @@ impl GraphEditor {
         self.toast = Some(Toast::error(err.message()))
     }
 
-    fn show_toast(&self, ui: &mut Ui) {
+    fn show_toast(&mut self, ui: &mut Ui) {
         if let Some(toast) = &self.toast {
-            toast.show(ui);
+            if toast.is_expired() {
+                self.toast = None;
+            } else {
+                toast.show(ui);
+            }
         }
     }
 }
