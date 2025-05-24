@@ -10,8 +10,10 @@ use graph_editor_egui::{
     comment_line::{editor::CommentsEditor, group::CommentsGroup},
     edge_editor::EdgeEditor,
     edges_table::EdgesTable,
+    error::GraphEditorError,
     graph::Graph,
     node_editor::NodeEditor,
+    toast::Toast,
 };
 
 fn main() -> eframe::Result {
@@ -51,6 +53,7 @@ struct GraphEditor {
     selected_editor: Editor,
     file_dialog: FileDialog,
     file_operation: FileOperation,
+    toast: Option<Toast>,
 }
 
 impl Default for GraphEditor {
@@ -66,6 +69,7 @@ impl Default for GraphEditor {
             selected_editor: Editor::Node,
             file_dialog: FileDialog::new(),
             file_operation: FileOperation::None,
+            toast: None,
         }
     }
 }
@@ -77,7 +81,9 @@ impl eframe::App for GraphEditor {
             self.show_editor_panel(ui);
             self.show_edges_panel(ui);
 
-            self.handle_file_operation(ui);
+            if let Err(err) = self.handle_file_operation(ui) {
+                self.handle_error(err);
+            }
 
             self.canvas.setup(ctx, ui);
 
@@ -85,6 +91,8 @@ impl eframe::App for GraphEditor {
 
             self.canvas
                 .draw_components(&self.graph, &self.comment_lines, ui);
+
+            self.show_toast(ui);
         });
     }
 }
@@ -146,30 +154,31 @@ impl GraphEditor {
             });
     }
 
-    fn handle_file_operation(&mut self, ui: &mut Ui) {
+    fn handle_file_operation(&mut self, ui: &mut Ui) -> Result<(), GraphEditorError> {
         self.file_dialog.update(ui.ctx());
 
         if let Some(file_path) = self.file_dialog.take_picked() {
             match self.file_operation {
                 FileOperation::Open => {
-                    let file = File::open(file_path).unwrap();
+                    let file =
+                        File::open(file_path).map_err(|_| GraphEditorError::FailedOpenFile)?;
                     let reader = BufReader::new(file);
 
-                    // TODO: check if operation successful
-                    self.graph = serde_json::from_reader(reader).unwrap();
+                    self.graph = serde_json::from_reader(reader)
+                        .map_err(|_| GraphEditorError::FailedOpenFile)?;
                 }
                 FileOperation::Save => {
                     let graph_json = serde_json::to_string_pretty(&self.graph);
 
                     match graph_json {
                         Ok(value) => {
-                            let mut file = File::create(file_path).unwrap();
-                            // TODO: check if operation successful
-                            file.write_all(value.as_bytes()).unwrap();
+                            let mut file = File::create(file_path)
+                                .map_err(|_| GraphEditorError::FailedSaveFile)?;
+                            file.write_all(value.as_bytes())
+                                .map_err(|_| GraphEditorError::FailedSaveFile)?;
                         }
                         Err(_) => {
-                            // TODO: replace with pop-up message
-                            println!("Not saved")
+                            return Err(GraphEditorError::FailedSaveFile);
                         }
                     }
                 }
@@ -177,6 +186,8 @@ impl GraphEditor {
             }
             self.file_operation = FileOperation::None;
         }
+
+        Ok(())
     }
 
     fn handle_interaction_logic(&mut self) {
@@ -199,6 +210,16 @@ impl GraphEditor {
             if !edge_created {
                 self.canvas.handle_setting_edge_start(&self.graph);
             }
+        }
+    }
+
+    fn handle_error(&mut self, err: GraphEditorError) {
+        self.toast = Some(Toast::error(err.message()))
+    }
+
+    fn show_toast(&self, ui: &mut Ui) {
+        if let Some(toast) = &self.toast {
+            toast.show(ui);
         }
     }
 }
