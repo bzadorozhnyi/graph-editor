@@ -27,21 +27,11 @@ impl Toast {
     }
 
     pub fn error<S: Into<String>>(message: S) -> Self {
-        Self {
-            message: message.into(),
-            created_at: Instant::now(),
-            duration: Duration::from_secs(3),
-            variant: ToastVariant::Error,
-        }
+        Self::new(message, ToastVariant::Error)
     }
 
     pub fn success<S: Into<String>>(message: S) -> Self {
-        Self {
-            message: message.into(),
-            created_at: Instant::now(),
-            duration: Duration::from_secs(3),
-            variant: ToastVariant::Success,
-        }
+        Self::new(message, ToastVariant::Success)
     }
 
     pub fn is_expired(&self) -> bool {
