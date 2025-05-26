@@ -3,6 +3,8 @@ pub mod node;
 
 use std::collections::BTreeMap;
 use std::collections::HashMap;
+use std::sync::LazyLock;
+use std::sync::Mutex;
 
 pub use edge::Edge;
 use edge::EdgeId;
@@ -10,11 +12,16 @@ use eframe::egui::pos2;
 pub use node::Node;
 pub use node::NodeId;
 use rand::{rngs::StdRng, Rng, SeedableRng};
+use serde::Deserialize;
+use serde::Serialize;
 
 use crate::consts::{
     DEFAULT_NODE_X_POSITION, DEFAULT_NODE_Y_POSITION, MAX_NODE_RADIUS, MIN_NODE_RADIUS,
 };
 
+static RNG: LazyLock<Mutex<StdRng>> = LazyLock::new(|| Mutex::new(StdRng::seed_from_u64(0)));
+
+#[derive(Serialize, Deserialize)]
 pub struct Graph {
     nodes: HashMap<NodeId, Node>,
     edges: BTreeMap<EdgeId, Edge>,
@@ -23,7 +30,6 @@ pub struct Graph {
     dragging_node_id: Option<NodeId>,
     node_id_counter: usize,
     edge_id_counter: usize,
-    rng: StdRng,
 }
 
 impl Default for Graph {
@@ -36,7 +42,6 @@ impl Default for Graph {
             dragging_node_id: Default::default(),
             node_id_counter: Default::default(),
             edge_id_counter: Default::default(),
-            rng: StdRng::seed_from_u64(0),
         }
     }
 }
@@ -67,18 +72,17 @@ impl Graph {
         let node_id = self.node_id_counter;
 
         let position = pos2(
-            DEFAULT_NODE_X_POSITION
-                + self
-                    .rng
-                    .random_range(2.0 * MIN_NODE_RADIUS..=2.0 * MAX_NODE_RADIUS),
-            DEFAULT_NODE_Y_POSITION
-                + self
-                    .rng
-                    .random_range(2.0 * MIN_NODE_RADIUS..=2.0 * MAX_NODE_RADIUS),
+            DEFAULT_NODE_X_POSITION + self.random_node_position_offset(),
+            DEFAULT_NODE_Y_POSITION + self.random_node_position_offset(),
         );
         let new_node = Node::new(node_id.to_string(), position);
 
         self.nodes.insert(NodeId(node_id), new_node);
+    }
+
+    fn random_node_position_offset(&self) -> f32 {
+        let mut rng = RNG.lock().unwrap();
+        rng.random_range(2.0 * MIN_NODE_RADIUS..=2.0 * MAX_NODE_RADIUS)
     }
 
     pub fn add_edge(&mut self, start_id: NodeId, end_id: NodeId) {

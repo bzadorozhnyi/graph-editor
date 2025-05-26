@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use eframe::{
     egui::{
-        self, Align2, Color32, FontFamily, FontId, FontSelection, Painter, Pos2, Rect, Response,
-        Rgba, RichText, Sense, Shape, Stroke, Ui, Vec2, WidgetText,
+        self, vec2, Align2, Color32, FontFamily, FontId, FontSelection, Painter, Pos2, Rect,
+        Response, Rgba, RichText, Sense, Shape, Stroke, Ui, Vec2, WidgetText,
     },
     emath::Rot2,
     epaint::{CubicBezierShape, QuadraticBezierShape, TextShape},
@@ -18,7 +18,6 @@ use crate::{
 pub struct Canvas {
     response: Option<Response>,
     painter: Option<Painter>,
-    painter_area: Rect,
     new_edge_start: Option<NodeId>,
 }
 
@@ -27,7 +26,6 @@ impl Default for Canvas {
         Self {
             response: None,
             painter: None,
-            painter_area: Rect::ZERO,
             new_edge_start: None,
         }
     }
@@ -52,11 +50,10 @@ impl Canvas {
     }
 
     pub fn setup(&mut self, ctx: &eframe::egui::Context, ui: &mut Ui) {
-        self.painter_area = ctx.available_rect().shrink(16.0);
-        let size = self.painter_area.size();
+        let size = ctx.available_rect().shrink2(vec2(8.0, 18.0)).size();
 
         let (response, painter) = ui.allocate_painter(size, Sense::click_and_drag());
-        painter.rect_filled(self.painter_area, 0.0, Color32::WHITE);
+        painter.rect_filled(response.rect, 0.0, Color32::WHITE);
 
         self.response = Some(response);
         self.painter = Some(painter);
@@ -71,18 +68,20 @@ impl Canvas {
 impl Canvas {
     /// Evaluate new position of node, which satisfy painter's bounds constraints
     fn bounds_constraint_correction(&self, node: &Node, pointer_pos: Pos2) -> Pos2 {
-        let new_x = if pointer_pos.x - node.radius < self.painter_area.min.x {
-            self.painter_area.min.x + node.radius
-        } else if pointer_pos.x + node.radius > self.painter_area.max.x {
-            self.painter_area.max.x - node.radius
+        let canvas_rect = self.response().rect;
+
+        let new_x = if pointer_pos.x - node.radius < canvas_rect.min.x {
+            canvas_rect.min.x + node.radius
+        } else if pointer_pos.x + node.radius > canvas_rect.max.x {
+            canvas_rect.max.x - node.radius
         } else {
             pointer_pos.x
         };
 
-        let new_y = if pointer_pos.y - node.radius < self.painter_area.min.y {
-            self.painter_area.min.y + node.radius
-        } else if pointer_pos.y + node.radius > self.painter_area.max.y {
-            self.painter_area.max.y - node.radius
+        let new_y = if pointer_pos.y - node.radius < canvas_rect.min.y {
+            canvas_rect.min.y + node.radius
+        } else if pointer_pos.y + node.radius > canvas_rect.max.y {
+            canvas_rect.max.y - node.radius
         } else {
             pointer_pos.y
         };
@@ -134,7 +133,7 @@ impl Canvas {
     }
 
     /// Draw node.
-    pub fn draw_node(&self, node: &Node) {
+    fn draw_node(&self, node: &Node) {
         self.painter()
             .circle(node.position, node.radius, node.color, Stroke::NONE);
 
@@ -154,7 +153,7 @@ impl Canvas {
     }
 
     /// Draw all nodes.
-    pub fn draw_nodes(&mut self, graph: &Graph) {
+    fn draw_nodes(&mut self, graph: &Graph) {
         for node in graph.nodes().values() {
             self.draw_node(node);
         }
@@ -217,7 +216,7 @@ impl Canvas {
     }
 
     /// Draw possible edge from new_edge_start node to pointer pos.
-    pub fn draw_possible_edge(&mut self, graph: &Graph) {
+    fn draw_possible_edge(&mut self, graph: &Graph) {
         if let (Some(edge_start), Some(pointer_pos)) =
             (self.new_edge_start, self.response().hover_pos())
         {
@@ -411,7 +410,7 @@ impl Canvas {
     }
 
     /// Draw all edges.
-    pub fn draw_edges(&mut self, ui: &mut Ui, graph: &Graph) {
+    fn draw_edges(&mut self, ui: &mut Ui, graph: &Graph) {
         let mut grouped_edges = HashMap::<(NodeId, NodeId), Vec<&Edge>>::new();
 
         for edge in graph.edges().values() {
@@ -487,15 +486,23 @@ impl Canvas {
         // Create eraser square in hover_pos
         let hover_square = Rect::from_center_size(square_center, Vec2::new(10.0, 10.0));
 
-        self.painter()
-            .rect_stroke(hover_square, 0.0, Stroke::new(1.0, Color32::BLACK));
+        self.painter().rect_stroke(
+            hover_square,
+            0.0,
+            Stroke::new(1.0, Color32::BLACK),
+            egui::StrokeKind::Outside,
+        );
 
         if let Some(pointer_pos) = self.response().interact_pointer_pos() {
             // Create eraser square in pointer_pos
             let interact_square = Rect::from_center_size(pointer_pos, Vec2::new(10.0, 10.0));
 
-            self.painter()
-                .rect_stroke(interact_square, 0.0, Stroke::new(1.0, Color32::BLACK));
+            self.painter().rect_stroke(
+                interact_square,
+                0.0,
+                Stroke::new(1.0, Color32::BLACK),
+                egui::StrokeKind::Outside,
+            );
 
             // Find comment_line intersected by interact_square
             let mut selected_line_id = None;
@@ -513,13 +520,21 @@ impl Canvas {
         }
     }
 
-    // Draw all comment lines.
-    pub fn draw_comment_lines(&self, comment_lines: &CommentsGroup) {
+    /// Draw all comment lines.
+    fn draw_comment_lines(&self, comment_lines: &CommentsGroup) {
         let lines = comment_lines
             .iter()
             .filter(|(_, line)| line.len() >= 2)
             .map(|(_, line)| egui::Shape::line(line.points.clone(), line.stroke));
 
         self.painter().extend(lines);
+    }
+
+    /// Draw possible edge, all nodes and edges, comment lines.
+    pub fn draw_components(&mut self, graph: &Graph, comment_lines: &CommentsGroup, ui: &mut Ui) {
+        self.draw_possible_edge(&graph);
+        self.draw_edges(ui, &graph);
+        self.draw_nodes(&graph);
+        self.draw_comment_lines(&comment_lines);
     }
 }
