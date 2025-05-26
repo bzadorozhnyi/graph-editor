@@ -7,6 +7,16 @@ Here is simple editor to visualize graph made with `Rust` and [`egui`](https://g
     <img src="https://github.com/user-attachments/assets/f9b5d0c2-1c6a-4fa5-9461-42db6dd0a470">
 </p>
 
+- [Usage](#usage)
+  - [Edge creation](#edge-creation)
+  - [Other things](#other-things)
+- [Abilities](#abilities)
+  - [Support node creation and modification](#support-node-creation-and-modification)
+  - [Support edge multiedging creation and modification (including loop edges)](#support-edge-multiedging-creation-and-modification-including-loop-edges)
+  - [Adding comment lines above graph](#adding-comment-lines-above-graph)
+  - [Labels autorotation](#labels-autorotation)
+  - [File processing](#file-processing)
+
 ## Usage
 
 ### Edge creation
