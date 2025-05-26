@@ -4,7 +4,7 @@ Here is simple editor to visualize graph made with `Rust` and [`egui`](https://g
 
 
 <p align="center">
-    <img src="media/logo_1.png", alt="Logo">
+    <img src="https://github.com/user-attachments/assets/f9b5d0c2-1c6a-4fa5-9461-42db6dd0a470">
 </p>
 
 ## Usage
