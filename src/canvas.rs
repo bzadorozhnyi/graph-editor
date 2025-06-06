@@ -376,7 +376,7 @@ impl Canvas {
 
     /// Draw edge.
     fn draw_edge(&self, ui: &mut Ui, graph: &Graph, edge: &Edge, shift: f32) {
-        let edge_order = if edge.start_id < edge.end_id {
+        let direction_sign = if edge.start_id < edge.end_id {
             -1.0
         } else {
             1.0
@@ -386,14 +386,14 @@ impl Canvas {
         let (start, end) = self.calculate_border_intersection(node_start, node_end);
 
         // Calc edge start and end to avoid edges overlaping
-        // based on shift and edge_order
+        // based on shift and direction_sign
         let start =
-            self.rotate_border_point(start, node_start.position, DELTA_ANGLE * shift * edge_order);
+            self.rotate_border_point(start, node_start.position, DELTA_ANGLE * shift * direction_sign);
         let end =
-            self.rotate_border_point(end, node_end.position, -DELTA_ANGLE * shift * edge_order);
+            self.rotate_border_point(end, node_end.position, -DELTA_ANGLE * shift * direction_sign);
 
         // Calc edge control for curve
-        let direction = edge_order * (start - end).normalized();
+        let direction = direction_sign * (start - end).normalized();
         let midpoint = Pos2::new((start.x + end.x) / 2.0, (start.y + end.y) / 2.0);
         let control = midpoint + direction.rot90() * shift * CONTROL_OFFSET;
 
