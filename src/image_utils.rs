@@ -1,11 +1,11 @@
-use std::{fs::File, io::BufWriter};
+use std::{fs::File, io::BufWriter, path::PathBuf};
 
 use eframe::egui::{ColorImage, Rect};
 use image::{ImageBuffer, Rgba};
 
 use crate::error::GraphEditorError;
 
-pub fn save_color_image_to_png(path: &str, image: &ColorImage) -> Result<(), GraphEditorError> {
+pub fn save_color_image_to_png(path: PathBuf, image: &ColorImage) -> Result<(), GraphEditorError> {
     let width = image.width() as u32;
     let height = image.height() as u32;
 

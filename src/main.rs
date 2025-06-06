@@ -3,7 +3,7 @@ use std::{
     io::{BufReader, Write},
 };
 
-use eframe::egui::{self, Margin, SidePanel, Ui, UserData};
+use eframe::egui::{self, ColorImage, Margin, SidePanel, Ui, UserData};
 use egui_file_dialog::FileDialog;
 use graph_editor_egui::{
     canvas::Canvas,
@@ -38,8 +38,9 @@ enum Editor {
 }
 
 enum FileOperation {
-    Open,
-    Save,
+    FileOpen,
+    FileSave,
+    ScreenshotSave,
     None,
 }
 
@@ -56,6 +57,7 @@ struct GraphEditor {
     file_operation: FileOperation,
     toast: Option<Toast>,
     taking_screenshot: bool,
+    screenshot: Option<ColorImage>,
 }
 
 impl Default for GraphEditor {
@@ -73,6 +75,7 @@ impl Default for GraphEditor {
             file_operation: FileOperation::None,
             toast: None,
             taking_screenshot: false,
+            screenshot: None,
         }
     }
 }
@@ -111,11 +114,11 @@ impl GraphEditor {
         egui::menu::bar(ui, |ui| {
             ui.menu_button("File", |ui| {
                 if ui.button("Save").clicked() {
-                    self.file_operation = FileOperation::Save;
+                    self.file_operation = FileOperation::FileSave;
                     self.file_dialog.save_file();
                 }
                 if ui.button("Open").clicked() {
-                    self.file_operation = FileOperation::Open;
+                    self.file_operation = FileOperation::FileOpen;
                     self.file_dialog.pick_file();
                 }
             });
@@ -172,7 +175,7 @@ impl GraphEditor {
 
         if let Some(file_path) = self.file_dialog.take_picked() {
             match self.file_operation {
-                FileOperation::Open => {
+                FileOperation::FileOpen => {
                     let file =
                         File::open(file_path).map_err(|_| GraphEditorError::FailedOpenFile)?;
                     let reader = BufReader::new(file);
@@ -180,7 +183,7 @@ impl GraphEditor {
                     self.graph = serde_json::from_reader(reader)
                         .map_err(|_| GraphEditorError::FailedOpenFile)?;
                 }
-                FileOperation::Save => {
+                FileOperation::FileSave => {
                     let graph_json = serde_json::to_string_pretty(&self.graph);
 
                     match graph_json {
@@ -196,6 +199,13 @@ impl GraphEditor {
                     }
 
                     self.toast = Some(Toast::success("Saved successfully"));
+                }
+                FileOperation::ScreenshotSave => {
+                    if let Some(image) = &self.screenshot {
+                        save_color_image_to_png(file_path, &image)
+                            .map_err(|_| GraphEditorError::FailedTakeScreenshot)?;
+                        self.screenshot = None;
+                    }
                 }
                 FileOperation::None => {}
             }
@@ -271,9 +281,11 @@ impl GraphEditor {
             )
             .ok_or(GraphEditorError::FailedTakeScreenshot)?;
 
-            save_color_image_to_png("screenshot.png", &image)
-        } else {
-            Ok(())
+            self.file_operation = FileOperation::ScreenshotSave;
+            self.file_dialog.save_file();
+            self.screenshot = Some(image);
         }
+
+        Ok(())
     }
 }
