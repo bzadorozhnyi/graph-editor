@@ -16,6 +16,7 @@ Here is simple editor to visualize graph made with `Rust` and [`egui`](https://g
   - [Adding comment lines above graph](#adding-comment-lines-above-graph)
   - [Labels autorotation](#labels-autorotation)
   - [File processing](#file-processing)
+  - [Saving as image (screenshot)](#saving-as-image-screenshot)
 
 ## Usage
 
@@ -50,4 +51,8 @@ https://github.com/user-attachments/assets/781def71-f843-47cc-9b3b-3e793506ea8d
 ### File processing
 
 https://github.com/user-attachments/assets/ab805cae-b149-47b7-ae47-021062015a5e
+
+### Saving as image (screenshot)
+
+https://github.com/user-attachments/assets/46340cbc-ccad-41c9-89c1-0bab7a648534
 
