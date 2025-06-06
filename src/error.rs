@@ -1,6 +1,7 @@
 pub enum GraphEditorError{ 
     FailedOpenFile,
-    FailedSaveFile
+    FailedSaveFile,
+    FailedTakeScreenshot
 }
 
 impl GraphEditorError {
@@ -8,6 +9,7 @@ impl GraphEditorError {
         match self {
             GraphEditorError::FailedOpenFile => "Failed to open the file",
             GraphEditorError::FailedSaveFile => "Failed to save the file",
+            GraphEditorError::FailedTakeScreenshot => "Failed to take the screenshot"
         }
     }
 }

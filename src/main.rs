@@ -3,7 +3,7 @@ use std::{
     io::{BufReader, Write},
 };
 
-use eframe::egui::{self, Margin, SidePanel, Ui};
+use eframe::egui::{self, Margin, SidePanel, Ui, UserData};
 use egui_file_dialog::FileDialog;
 use graph_editor_egui::{
     canvas::Canvas,
@@ -12,6 +12,7 @@ use graph_editor_egui::{
     edges_table::EdgesTable,
     error::GraphEditorError,
     graph::Graph,
+    image_utils::{crop_color_image, save_color_image_to_png},
     node_editor::NodeEditor,
     toast::Toast,
 };
@@ -54,6 +55,7 @@ struct GraphEditor {
     file_dialog: FileDialog,
     file_operation: FileOperation,
     toast: Option<Toast>,
+    taking_screenshot: bool,
 }
 
 impl Default for GraphEditor {
@@ -70,6 +72,7 @@ impl Default for GraphEditor {
             file_dialog: FileDialog::new(),
             file_operation: FileOperation::None,
             toast: None,
+            taking_screenshot: false,
         }
     }
 }
@@ -93,6 +96,12 @@ impl eframe::App for GraphEditor {
                 .draw_components(&self.graph, &self.comment_lines, ui);
 
             self.show_toast(ui);
+
+            if self.taking_screenshot {
+                if let Err(err) = self.take_screenshot(ui) {
+                    self.handle_error(err);
+                };
+            }
         });
     }
 }
@@ -121,6 +130,10 @@ impl GraphEditor {
                 Editor::CommentLine,
                 "Comment line",
             );
+
+            if ui.button("Screenshot").clicked() {
+                self.taking_screenshot = true;
+            }
         });
     }
 
@@ -226,6 +239,41 @@ impl GraphEditor {
             } else {
                 toast.show(ui);
             }
+        }
+    }
+}
+
+impl GraphEditor {
+    fn take_screenshot(&mut self, ui: &mut Ui) -> Result<(), GraphEditorError> {
+        ui.ctx()
+            .send_viewport_cmd(egui::ViewportCommand::Screenshot(UserData::default()));
+
+        let image = ui.ctx().input(|i| {
+            i.events
+                .iter()
+                .filter_map(|e| {
+                    if let egui::Event::Screenshot { image, .. } = e {
+                        Some(image.clone())
+                    } else {
+                        None
+                    }
+                })
+                .last()
+        });
+
+        if let Some(image) = image {
+            self.taking_screenshot = false;
+
+            let image = crop_color_image(
+                &image,
+                self.canvas.painter_rect(),
+                self.canvas.pixels_per_point(),
+            )
+            .ok_or(GraphEditorError::FailedTakeScreenshot)?;
+
+            save_color_image_to_png("screenshot.png", &image)
+        } else {
+            Ok(())
         }
     }
 }

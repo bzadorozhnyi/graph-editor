@@ -49,6 +49,14 @@ impl Canvas {
             .expect("Canvas::setup() must be called first!")
     }
 
+    pub fn painter_rect(&self) -> Rect {
+        self.painter().clip_rect()
+    }
+
+    pub fn pixels_per_point(&self) -> f32 {
+        self.painter().pixels_per_point()
+    }
+
     pub fn setup(&mut self, ctx: &eframe::egui::Context, ui: &mut Ui) {
         let size = ctx.available_rect().shrink2(vec2(8.0, 18.0)).size();
 

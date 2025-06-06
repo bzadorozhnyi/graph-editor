@@ -2,7 +2,7 @@ use std::time::{Duration, Instant};
 
 use eframe::egui::{self, vec2, Color32, Rect, Sense, Shadow, Stroke, Ui};
 
-const TOAST_WIDTH: f32 = 300.0;
+const TOAST_WIDTH: f32 = 200.0;
 
 pub struct Toast {
     pub message: String,
@@ -44,7 +44,7 @@ impl Toast {
 
     pub fn show(&self, ui: &mut Ui) {
         egui::Area::new("toast_area".into())
-            .anchor(egui::Align2::CENTER_TOP, [0.0, 40.0])
+            .anchor(egui::Align2::RIGHT_BOTTOM, [-20.0, -20.0])
             .show(ui.ctx(), |ui| {
                 ui.visuals_mut().override_text_color = Some(Color32::WHITE);
 
