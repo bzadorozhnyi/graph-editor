@@ -54,5 +54,5 @@ https://github.com/user-attachments/assets/ab805cae-b149-47b7-ae47-021062015a5e
 
 ### Saving as image (screenshot)
 
-https://github.com/user-attachments/assets/46340cbc-ccad-41c9-89c1-0bab7a648534
+https://github.com/user-attachments/assets/38c3a076-d559-419b-8ea1-6564f375b99a
 
