@@ -34,7 +34,7 @@ Use ui to create, modify and custome your graph.
 
 ### Support node creation and modification
 
-https://github.com/user-attachments/assets/dcdaaf44-0e5d-4138-9092-c27a974d80d8
+https://github.com/user-attachments/assets/0793e8f8-d677-4acd-9fa1-28339f187a7b
 
 ### Support edge multiedging creation and modification (including loop edges)
 
@@ -55,4 +55,3 @@ https://github.com/user-attachments/assets/ab805cae-b149-47b7-ae47-021062015a5e
 ### Saving as image (screenshot)
 
 https://github.com/user-attachments/assets/38c3a076-d559-419b-8ea1-6564f375b99a
-
