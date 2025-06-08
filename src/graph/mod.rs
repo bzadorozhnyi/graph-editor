@@ -3,15 +3,19 @@ pub mod node;
 
 use std::collections::BTreeMap;
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::BufReader;
+use std::io::Write;
+use std::path::PathBuf;
 use std::sync::LazyLock;
 use std::sync::Mutex;
 
 pub use edge::Edge;
 use edge::EdgeId;
 use eframe::egui::pos2;
+pub use node::shape::NodeShape;
 pub use node::Node;
 pub use node::NodeId;
-pub use node::shape::NodeShape;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use serde::Deserialize;
 use serde::Serialize;
@@ -19,6 +23,7 @@ use serde::Serialize;
 use crate::consts::{
     DEFAULT_NODE_X_POSITION, DEFAULT_NODE_Y_POSITION, MAX_NODE_SIZE, MIN_NODE_SIZE,
 };
+use crate::error::GraphEditorError;
 
 static RNG: LazyLock<Mutex<StdRng>> = LazyLock::new(|| Mutex::new(StdRng::seed_from_u64(0)));
 
@@ -50,6 +55,13 @@ impl Default for Graph {
 impl Graph {
     pub fn new() -> Self {
         Default::default()
+    }
+
+    pub fn from_file(file_path: &PathBuf) -> Result<Self, GraphEditorError> {
+        let file: File = File::open(file_path).map_err(|_| GraphEditorError::FailedOpenFile)?;
+        let reader = BufReader::new(file);
+
+        serde_json::from_reader(reader).map_err(|_| GraphEditorError::FailedOpenFile)
     }
 
     pub fn nodes(&self) -> &HashMap<NodeId, Node> {
@@ -173,5 +185,23 @@ impl Graph {
         }
 
         self.edges.retain(|&edge_id, _| edge_id != id);
+    }
+
+    pub fn save_to_file(&self, file_path: &PathBuf) -> Result<(), GraphEditorError> {
+        let graph_json = serde_json::to_string_pretty(&self);
+
+        match graph_json {
+            Ok(value) => {
+                let mut file =
+                    File::create(file_path).map_err(|_| GraphEditorError::FailedSaveFile)?;
+                file.write_all(value.as_bytes())
+                    .map_err(|_| GraphEditorError::FailedSaveFile)?;
+            }
+            Err(_) => {
+                return Err(GraphEditorError::FailedSaveFile);
+            }
+        }
+
+        Ok(())
     }
 }

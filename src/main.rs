@@ -1,9 +1,6 @@
-use std::{
-    fs::File,
-    io::{BufReader, Write},
-};
+use std::path::PathBuf;
 
-use eframe::egui::{self, ColorImage, Margin, SidePanel, Ui, UserData};
+use eframe::egui::{self, ColorImage, Context, Margin, SidePanel, Ui, UserData, ViewportCommand};
 use egui_file_dialog::FileDialog;
 use graph_editor_egui::{
     canvas::Canvas,
@@ -40,6 +37,7 @@ enum Editor {
 enum FileOperation {
     FileOpen,
     FileSave,
+    FileSaveAs,
     ScreenshotSave,
     None,
 }
@@ -55,6 +53,7 @@ struct GraphEditor {
     selected_editor: Editor,
     file_dialog: FileDialog,
     file_operation: FileOperation,
+    current_file: Option<PathBuf>,
     toast: Option<Toast>,
     taking_screenshot: bool,
     screenshot: Option<ColorImage>,
@@ -73,6 +72,7 @@ impl Default for GraphEditor {
             selected_editor: Editor::Node,
             file_dialog: FileDialog::new(),
             file_operation: FileOperation::None,
+            current_file: None,
             toast: None,
             taking_screenshot: false,
             screenshot: None,
@@ -113,13 +113,19 @@ impl GraphEditor {
     fn show_menu(&mut self, ui: &mut Ui) {
         egui::menu::bar(ui, |ui| {
             ui.menu_button("File", |ui| {
-                if ui.button("Save").clicked() {
-                    self.file_operation = FileOperation::FileSave;
-                    self.file_dialog.save_file();
-                }
                 if ui.button("Open").clicked() {
                     self.file_operation = FileOperation::FileOpen;
                     self.file_dialog.pick_file();
+                }
+                if ui.button("Save").clicked() {
+                    self.file_operation = FileOperation::FileSave;
+                    if self.current_file.is_none() {
+                        self.file_dialog.save_file();
+                    }
+                }
+                if ui.button("Save as").clicked() {
+                    self.file_operation = FileOperation::FileSaveAs;
+                    self.file_dialog.save_file();
                 }
             });
 
@@ -173,43 +179,53 @@ impl GraphEditor {
     fn handle_file_operation(&mut self, ui: &mut Ui) -> Result<(), GraphEditorError> {
         self.file_dialog.update(ui.ctx());
 
-        if let Some(file_path) = self.file_dialog.take_picked() {
-            match self.file_operation {
-                FileOperation::FileOpen => {
-                    let file =
-                        File::open(file_path).map_err(|_| GraphEditorError::FailedOpenFile)?;
-                    let reader = BufReader::new(file);
+        match self.file_operation {
+            FileOperation::FileOpen => {
+                if let Some(file_path) = self.file_dialog.take_picked() {
+                    self.graph = Graph::from_file(&file_path)?;
 
-                    self.graph = serde_json::from_reader(reader)
-                        .map_err(|_| GraphEditorError::FailedOpenFile)?;
+                    self.update_current_file(ui, file_path);
+                    self.file_operation = FileOperation::None;
                 }
-                FileOperation::FileSave => {
-                    let graph_json = serde_json::to_string_pretty(&self.graph);
+            }
+            FileOperation::FileSave => {
+                let dialog_picked_file = self.file_dialog.take_picked();
 
-                    match graph_json {
-                        Ok(value) => {
-                            let mut file = File::create(file_path)
-                                .map_err(|_| GraphEditorError::FailedSaveFile)?;
-                            file.write_all(value.as_bytes())
-                                .map_err(|_| GraphEditorError::FailedSaveFile)?;
-                        }
-                        Err(_) => {
-                            return Err(GraphEditorError::FailedSaveFile);
-                        }
-                    }
+                let file_path = if self.current_file.is_some() {
+                    self.current_file.clone().unwrap()
+                } else if dialog_picked_file.is_some() {
+                    dialog_picked_file.unwrap()
+                } else {
+                    // nothing to save here
+                    return Ok(());
+                };
+
+                self.graph.save_to_file(&file_path)?;
+
+                self.toast = Some(Toast::success("Saved successfully"));
+                self.file_operation = FileOperation::None;
+            }
+            FileOperation::FileSaveAs => {
+                if let Some(file_path) = self.file_dialog.take_picked() {
+                    self.graph.save_to_file(&file_path)?;
+
+                    self.update_current_file(ui, file_path);
 
                     self.toast = Some(Toast::success("Saved successfully"));
+                    self.file_operation = FileOperation::None;
                 }
-                FileOperation::ScreenshotSave => {
+            }
+            FileOperation::ScreenshotSave => {
+                if let Some(file_path) = self.file_dialog.take_picked() {
                     if let Some(image) = &self.screenshot {
                         save_color_image_to_png(file_path, &image)
                             .map_err(|_| GraphEditorError::FailedTakeScreenshot)?;
                         self.screenshot = None;
+                        self.file_operation = FileOperation::None;
                     }
                 }
-                FileOperation::None => {}
             }
-            self.file_operation = FileOperation::None;
+            FileOperation::None => {}
         }
 
         Ok(())
@@ -287,5 +303,14 @@ impl GraphEditor {
         }
 
         Ok(())
+    }
+
+    fn update_window_title(&self, ctx: &Context, title: &str) {
+        ctx.send_viewport_cmd(ViewportCommand::Title(title.to_owned()));
+    }
+
+    fn update_current_file(&mut self, ui: &mut Ui, file_path: PathBuf) {
+        self.update_window_title(ui.ctx(), &format!("Graph Editor | {}", file_path.display()));
+        self.current_file = Some(file_path);
     }
 }
