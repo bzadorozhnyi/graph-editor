@@ -8,3 +8,4 @@ pub mod consts;
 pub mod comment_line;
 pub mod toast;
 pub mod image_utils;
+pub mod utils;

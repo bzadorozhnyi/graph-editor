@@ -244,8 +244,8 @@ impl Canvas {
     fn calculate_border_intersection(&self, node1: &Node, node2: &Node) -> (Pos2, Pos2) {
         let direction = (node2.position - node1.position).normalized();
 
-        let start = node1.position + direction * node1.size;
-        let end = node2.position - direction * node2.size;
+        let start = node1.border_point_in_direction(direction);
+        let end = node2.border_point_in_direction(-direction);
 
         (start, end)
     }
@@ -296,16 +296,6 @@ impl Canvas {
         ));
     }
 
-    /// Rotate point on circle border (`border_pos`)
-    /// relative to circle's center (`center_pos`) by `alpha` degree (in radians).
-    fn rotate_border_point(&self, border_pos: Pos2, center_pos: Pos2, alpha: f32) -> Pos2 {
-        let rotation = Rot2::from_angle(alpha);
-        let translated = border_pos - center_pos;
-        let rotated = rotation * translated;
-
-        center_pos + rotated
-    }
-
     /// Draw loop edge
     fn draw_loop(&self, ui: &mut Ui, graph: &Graph, edge: &Edge, shift: f32) {
         let node = &graph.nodes()[&edge.start_id];
@@ -314,17 +304,11 @@ impl Canvas {
 
         // Calculate border points based on rotation angle.
         // Start point is north of node + rotation angle.
-        let start = self.rotate_border_point(
-            node.position - Vec2::new(0.0, node.size),
-            node.position,
-            rotation_angle,
-        );
+        let start =
+            node.rotate_border_point(node.position - Vec2::new(0.0, node.size), rotation_angle);
         // End point is west of node + rotation angle.
-        let end = self.rotate_border_point(
-            node.position - Vec2::new(node.size, 0.0),
-            node.position,
-            rotation_angle,
-        );
+        let end =
+            node.rotate_border_point(node.position - Vec2::new(node.size, 0.0), rotation_angle);
 
         // Calc direction of vectors:
         // direction1: start -> node.center (node.position)
@@ -367,16 +351,9 @@ impl Canvas {
 
         // Calc edge start and end to avoid edges overlaping
         // based on shift and direction_sign
-        let start = self.rotate_border_point(
-            start,
-            node_start.position,
-            DELTA_ANGLE * shift * direction_sign,
-        );
-        let end = self.rotate_border_point(
-            end,
-            node_end.position,
-            -DELTA_ANGLE * shift * direction_sign,
-        );
+        let alpha = DELTA_ANGLE * shift * direction_sign;
+        let start = node_start.rotate_border_point(start, alpha);
+        let end = node_end.rotate_border_point(end, -alpha);
 
         // Calc edge control for curve
         let direction = direction_sign * (start - end).normalized();

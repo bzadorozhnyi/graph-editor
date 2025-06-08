@@ -5,7 +5,12 @@ pub mod shape;
 use crate::{
     consts::{
         DEFAULT_NODE_X_POSITION, DEFAULT_NODE_Y_POSITION, MIN_NODE_LABEL_SIZE, MIN_NODE_SIZE,
-    }, graph::node::shape::NodeShape,
+    },
+    graph::node::shape::NodeShape,
+    utils::geometry::{
+        circle::rotate_cirlce_border_point,
+        square::{intersect_rect_edge, rotate_square_border_point},
+    },
 };
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Serialize, Deserialize)]
@@ -82,7 +87,25 @@ impl Node {
             NodeShape::Square => {
                 let rect = Rect::from_center_size(self.position, Vec2::splat(2.0 * self.size));
                 rect.contains(pointer_pos)
-            },
+            }
+        }
+    }
+
+    pub fn border_point_in_direction(&self, direction: Vec2) -> Pos2 {
+        match self.shape {
+            NodeShape::Circle => self.position + direction.normalized() * self.size,
+            NodeShape::Square => intersect_rect_edge(self.position, self.size, direction),
+        }
+    }
+
+    /// Rotate a point on the border of a node around its center by a given angle (alpha, in radians).
+    /// The resulting point is snapped back to the node's perimeter.
+    pub fn rotate_border_point(&self, border_pos: Pos2, alpha: f32) -> Pos2 {
+        match self.shape {
+            NodeShape::Circle => rotate_cirlce_border_point(border_pos, self.position, alpha),
+            NodeShape::Square => {
+                rotate_square_border_point(border_pos, self.position, alpha, self.size)
+            }
         }
     }
 }
