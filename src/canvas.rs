@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use eframe::{
     egui::{
-        self, vec2, Align2, Color32, FontFamily, FontId, FontSelection, Painter, Pos2, Rect,
-        Response, Rgba, RichText, Sense, Shape, Stroke, Ui, Vec2, WidgetText,
+        self, vec2, Color32, FontSelection, Painter, Pos2, Rect, Response, Rgba, RichText, Sense,
+        Shape, Stroke, Ui, Vec2, WidgetText,
     },
     emath::Rot2,
     epaint::{CubicBezierShape, QuadraticBezierShape, TextShape},
@@ -11,7 +11,7 @@ use eframe::{
 
 use crate::{
     comment_line::{group::CommentsGroup, CommentLine},
-    consts::{ARROW_HALF_ANGLE, ARROW_LEN_COEF, CONTROL_OFFSET, DELTA_ANGLE, MIN_NODE_RADIUS},
+    consts::{ARROW_HALF_ANGLE, ARROW_LEN_COEF, CONTROL_OFFSET, DELTA_ANGLE, MIN_NODE_SIZE},
     graph::{Edge, Graph, Node, NodeId},
 };
 
@@ -78,18 +78,18 @@ impl Canvas {
     fn bounds_constraint_correction(&self, node: &Node, pointer_pos: Pos2) -> Pos2 {
         let canvas_rect = self.response().rect;
 
-        let new_x = if pointer_pos.x - node.radius < canvas_rect.min.x {
-            canvas_rect.min.x + node.radius
-        } else if pointer_pos.x + node.radius > canvas_rect.max.x {
-            canvas_rect.max.x - node.radius
+        let new_x = if pointer_pos.x - node.size < canvas_rect.min.x {
+            canvas_rect.min.x + node.size
+        } else if pointer_pos.x + node.size > canvas_rect.max.x {
+            canvas_rect.max.x - node.size
         } else {
             pointer_pos.x
         };
 
-        let new_y = if pointer_pos.y - node.radius < canvas_rect.min.y {
-            canvas_rect.min.y + node.radius
-        } else if pointer_pos.y + node.radius > canvas_rect.max.y {
-            canvas_rect.max.y - node.radius
+        let new_y = if pointer_pos.y - node.size < canvas_rect.min.y {
+            canvas_rect.min.y + node.size
+        } else if pointer_pos.y + node.size > canvas_rect.max.y {
+            canvas_rect.max.y - node.size
         } else {
             pointer_pos.y
         };
@@ -121,7 +121,7 @@ impl Canvas {
 
         // if pointer pos is the same as some node => mark node as dragging node
         for (id, node) in graph.nodes().iter() {
-            if node.position.distance(pointer_pos) < node.radius {
+            if node.is_clicked(pointer_pos) {
                 graph.set_dragging_node(Some(*id));
                 break;
             }
@@ -132,7 +132,7 @@ impl Canvas {
     pub fn handle_node_selection(&mut self, graph: &mut Graph) {
         if let Some(pointer_pos) = self.response().interact_pointer_pos() {
             for (id, node) in graph.nodes() {
-                if node.position.distance(pointer_pos) < node.radius {
+                if node.is_clicked(pointer_pos) {
                     graph.set_selected_node_id(Some(*id));
                     break;
                 }
@@ -140,30 +140,10 @@ impl Canvas {
         }
     }
 
-    /// Draw node.
-    fn draw_node(&self, node: &Node) {
-        self.painter()
-            .circle(node.position, node.radius, node.color, Stroke::NONE);
-
-        let label_size = if node.label_size_matches_node_size {
-            node.radius
-        } else {
-            node.label_size
-        };
-
-        self.painter().text(
-            node.position,
-            Align2::CENTER_CENTER,
-            &node.label,
-            FontId::new(label_size, FontFamily::Monospace),
-            Color32::BLACK,
-        );
-    }
-
     /// Draw all nodes.
     fn draw_nodes(&mut self, graph: &Graph) {
         for node in graph.nodes().values() {
-            self.draw_node(node);
+            node.draw(self.painter());
         }
     }
 }
@@ -194,7 +174,7 @@ impl Canvas {
             // if some node has same pos as pointer
             // then creating edge (edge_start; node)
             for (id, node) in graph.nodes() {
-                if node.position.distance(pointer_pos) < node.radius {
+                if node.is_clicked(pointer_pos) {
                     graph.add_edge(edge_start, *id);
                     self.new_edge_start = None;
 
@@ -215,7 +195,7 @@ impl Canvas {
             // if some node has same pos as pointer
             // then set edge start as node id
             for (id, node) in graph.nodes() {
-                if node.position.distance(pointer_pos) < node.radius {
+                if node.is_clicked(pointer_pos) {
                     self.new_edge_start = Some(*id);
                     break;
                 }
@@ -231,15 +211,15 @@ impl Canvas {
             self.set_cursor_icon(egui::CursorIcon::PointingHand);
             let start_node = &graph.nodes()[&edge_start];
 
-            if start_node.position.distance(pointer_pos) < start_node.radius {
+            if start_node.position.distance(pointer_pos) < start_node.size {
                 // draw loop
                 // Start point is north of node
-                let start_pos = start_node.position - Vec2::new(0.0, start_node.radius);
+                let start_pos = start_node.position - Vec2::new(0.0, start_node.size);
                 // End point is west of node
-                let end_pos = start_node.position - Vec2::new(start_node.radius, 0.0);
+                let end_pos = start_node.position - Vec2::new(start_node.size, 0.0);
 
                 // Calc offset based on node size
-                let offset = CONTROL_OFFSET * (start_node.radius / MIN_NODE_RADIUS);
+                let offset = CONTROL_OFFSET * (start_node.size / MIN_NODE_SIZE);
 
                 // Calc controls for curve
                 let control1 = start_pos - Vec2::new(0.0, offset);
@@ -264,8 +244,8 @@ impl Canvas {
     fn calculate_border_intersection(&self, node1: &Node, node2: &Node) -> (Pos2, Pos2) {
         let direction = (node2.position - node1.position).normalized();
 
-        let start = node1.position + direction * node1.radius;
-        let end = node2.position - direction * node2.radius;
+        let start = node1.position + direction * node1.size;
+        let end = node2.position - direction * node2.size;
 
         (start, end)
     }
@@ -335,13 +315,13 @@ impl Canvas {
         // Calculate border points based on rotation angle.
         // Start point is north of node + rotation angle.
         let start = self.rotate_border_point(
-            node.position - Vec2::new(0.0, node.radius),
+            node.position - Vec2::new(0.0, node.size),
             node.position,
             rotation_angle,
         );
         // End point is west of node + rotation angle.
         let end = self.rotate_border_point(
-            node.position - Vec2::new(node.radius, 0.0),
+            node.position - Vec2::new(node.size, 0.0),
             node.position,
             rotation_angle,
         );
@@ -353,7 +333,7 @@ impl Canvas {
         let direction2 = (node.position - end).normalized();
 
         // Calc offset based on node size and shift (possible multiple loops)
-        let offset = CONTROL_OFFSET * (node.radius / MIN_NODE_RADIUS) * (1.0 + shift);
+        let offset = CONTROL_OFFSET * (node.size / MIN_NODE_SIZE) * (1.0 + shift);
         // Calc controls for curve
         let control1 = start - direction1 * offset;
         let control2 = end - direction2 * offset;
@@ -387,10 +367,16 @@ impl Canvas {
 
         // Calc edge start and end to avoid edges overlaping
         // based on shift and direction_sign
-        let start =
-            self.rotate_border_point(start, node_start.position, DELTA_ANGLE * shift * direction_sign);
-        let end =
-            self.rotate_border_point(end, node_end.position, -DELTA_ANGLE * shift * direction_sign);
+        let start = self.rotate_border_point(
+            start,
+            node_start.position,
+            DELTA_ANGLE * shift * direction_sign,
+        );
+        let end = self.rotate_border_point(
+            end,
+            node_end.position,
+            -DELTA_ANGLE * shift * direction_sign,
+        );
 
         // Calc edge control for curve
         let direction = direction_sign * (start - end).normalized();

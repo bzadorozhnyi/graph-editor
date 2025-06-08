@@ -11,12 +11,13 @@ use edge::EdgeId;
 use eframe::egui::pos2;
 pub use node::Node;
 pub use node::NodeId;
+pub use node::shape::NodeShape;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use serde::Deserialize;
 use serde::Serialize;
 
 use crate::consts::{
-    DEFAULT_NODE_X_POSITION, DEFAULT_NODE_Y_POSITION, MAX_NODE_RADIUS, MIN_NODE_RADIUS,
+    DEFAULT_NODE_X_POSITION, DEFAULT_NODE_Y_POSITION, MAX_NODE_SIZE, MIN_NODE_SIZE,
 };
 
 static RNG: LazyLock<Mutex<StdRng>> = LazyLock::new(|| Mutex::new(StdRng::seed_from_u64(0)));
@@ -82,7 +83,7 @@ impl Graph {
 
     fn random_node_position_offset(&self) -> f32 {
         let mut rng = RNG.lock().unwrap();
-        rng.random_range(2.0 * MIN_NODE_RADIUS..=2.0 * MAX_NODE_RADIUS)
+        rng.random_range(2.0 * MIN_NODE_SIZE..=2.0 * MAX_NODE_SIZE)
     }
 
     pub fn add_edge(&mut self, start_id: NodeId, end_id: NodeId) {

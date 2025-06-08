@@ -3,8 +3,8 @@ use eframe::egui::{
 };
 
 use crate::{
-    consts::{MAX_NODE_LABEL_SIZE, MAX_NODE_RADIUS, MIN_NODE_LABEL_SIZE, MIN_NODE_RADIUS, UI_SPACE},
-    graph::Graph,
+    consts::{MAX_NODE_LABEL_SIZE, MAX_NODE_SIZE, MIN_NODE_LABEL_SIZE, MIN_NODE_SIZE, UI_SPACE},
+    graph::{Graph, NodeShape},
 };
 
 pub struct NodeEditor;
@@ -32,11 +32,21 @@ impl NodeEditor {
                 ui.add_space(UI_SPACE);
 
                 ui.add(
-                    DragValue::new(&mut selected_node.radius)
-                        .range(MIN_NODE_RADIUS..=MAX_NODE_RADIUS)
+                    DragValue::new(&mut selected_node.size)
+                        .range(MIN_NODE_SIZE..=MAX_NODE_SIZE)
                         .speed(0.2)
                         .prefix("Size: "),
                 );
+            });
+
+            ui.separator();
+
+            ui.horizontal(|ui| {
+                ui.label("Shape:");
+                ui.add_space(UI_SPACE);
+                ui.selectable_value(&mut selected_node.shape, NodeShape::Circle, "⏺");
+                ui.add_space(UI_SPACE);
+                ui.selectable_value(&mut selected_node.shape, NodeShape::Square, "⏹");
             });
 
             ui.separator();
