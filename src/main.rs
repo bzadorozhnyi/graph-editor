@@ -182,7 +182,7 @@ impl GraphEditor {
         match self.file_operation {
             FileOperation::FileOpen => {
                 if let Some(file_path) = self.file_dialog.take_picked() {
-                    self.graph = Graph::from_file(&file_path)?;
+                    self.graph = Graph::try_from(&file_path)?;
 
                     self.update_current_file(ui, file_path);
                     self.file_operation = FileOperation::None;

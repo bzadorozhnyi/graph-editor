@@ -57,13 +57,6 @@ impl Graph {
         Default::default()
     }
 
-    pub fn from_file(file_path: &PathBuf) -> Result<Self, GraphEditorError> {
-        let file: File = File::open(file_path).map_err(|_| GraphEditorError::FailedOpenFile)?;
-        let reader = BufReader::new(file);
-
-        serde_json::from_reader(reader).map_err(|_| GraphEditorError::FailedOpenFile)
-    }
-
     pub fn nodes(&self) -> &HashMap<NodeId, Node> {
         &self.nodes
     }
@@ -203,5 +196,16 @@ impl Graph {
         }
 
         Ok(())
+    }
+}
+
+impl TryFrom<&PathBuf> for Graph {
+    type Error = GraphEditorError;
+
+    fn try_from(value: &PathBuf) -> Result<Self, Self::Error> {
+        let file: File = File::open(value).map_err(|_| GraphEditorError::FailedOpenFile)?;
+        let reader = BufReader::new(file);
+
+        serde_json::from_reader(reader).map_err(|_| GraphEditorError::FailedOpenFile)
     }
 }
