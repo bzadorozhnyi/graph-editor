@@ -9,7 +9,7 @@ use graph_editor_egui::{
     edges_table::EdgesTable,
     error::GraphEditorError,
     graph::Graph,
-    image_utils::{crop_color_image, save_color_image_to_png},
+    utils::image::{crop_color_image, save_color_image_to_png},
     node_editor::NodeEditor,
     toast::Toast,
 };
