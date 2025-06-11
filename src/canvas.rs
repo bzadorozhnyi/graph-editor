@@ -15,20 +15,11 @@ use crate::{
     graph::{Edge, Graph, Node, NodeId},
 };
 
+#[derive(Default)]
 pub struct Canvas {
     response: Option<Response>,
     painter: Option<Painter>,
     new_edge_start: Option<NodeId>,
-}
-
-impl Default for Canvas {
-    fn default() -> Self {
-        Self {
-            response: None,
-            painter: None,
-            new_edge_start: None,
-        }
-    }
 }
 
 // creation, setup and utils
@@ -503,9 +494,9 @@ impl Canvas {
 
     /// Draw possible edge, all nodes and edges, comment lines.
     pub fn draw_components(&mut self, graph: &Graph, comment_lines: &CommentsGroup, ui: &mut Ui) {
-        self.draw_possible_edge(&graph);
-        self.draw_edges(ui, &graph);
-        self.draw_nodes(&graph);
-        self.draw_comment_lines(&comment_lines);
+        self.draw_possible_edge(graph);
+        self.draw_edges(ui, graph);
+        self.draw_nodes(graph);
+        self.draw_comment_lines(comment_lines);
     }
 }

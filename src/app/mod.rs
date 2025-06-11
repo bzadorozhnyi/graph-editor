@@ -194,7 +194,7 @@ impl GraphEditor {
             FileOperation::ScreenshotSave => {
                 if let Some(file_path) = self.file_dialog.take_picked() {
                     if let Some(image) = &self.screenshot {
-                        save_color_image_to_png(file_path, &image)
+                        save_color_image_to_png(file_path, image)
                             .map_err(|_| GraphEditorError::FailedTakeScreenshot)?;
                         self.screenshot = None;
                         self.file_operation = FileOperation::None;

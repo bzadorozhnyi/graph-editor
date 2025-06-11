@@ -27,7 +27,7 @@ use crate::error::GraphEditorError;
 
 static RNG: LazyLock<Mutex<StdRng>> = LazyLock::new(|| Mutex::new(StdRng::seed_from_u64(0)));
 
-#[derive(Serialize, Deserialize)]
+#[derive(Default, Serialize, Deserialize)]
 pub struct Graph {
     nodes: HashMap<NodeId, Node>,
     edges: BTreeMap<EdgeId, Edge>,
@@ -36,20 +36,6 @@ pub struct Graph {
     dragging_node_id: Option<NodeId>,
     node_id_counter: usize,
     edge_id_counter: usize,
-}
-
-impl Default for Graph {
-    fn default() -> Self {
-        Self {
-            nodes: Default::default(),
-            edges: Default::default(),
-            selected_node_id: Default::default(),
-            selected_edge_id: Default::default(),
-            dragging_node_id: Default::default(),
-            node_id_counter: Default::default(),
-            edge_id_counter: Default::default(),
-        }
-    }
 }
 
 impl Graph {
