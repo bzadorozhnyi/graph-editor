@@ -1,16 +1,15 @@
-mod editor_variant;
+pub mod editor_variant;
 mod file_operation;
 
 use std::path::PathBuf;
 
 use crate::{
     app::{editor_variant::EditorVariant, file_operation::FileOperation},
-    canvas::Canvas,
-    comment_line::{editor::CommentsEditor, group::CommentsGroup},
+    comment_line::editor::CommentsEditor,
     edge_editor::EdgeEditor,
     edges_table::EdgesTable,
     error::GraphEditorError,
-    graph::Graph,
+    graph_workspace::GraphWorkspace,
     node_editor::NodeEditor,
     toast::Toast,
     utils::image::{crop_color_image, save_color_image_to_png},
@@ -19,9 +18,7 @@ use eframe::egui::{self, ColorImage, Context, Margin, SidePanel, Ui, UserData, V
 use egui_file_dialog::FileDialog;
 
 pub struct GraphEditor {
-    graph: Graph,
-    comment_lines: CommentsGroup,
-    canvas: Canvas,
+    graph_workspace: GraphWorkspace,
     node_editor: NodeEditor,
     edges_table: EdgesTable,
     edge_editor: EdgeEditor,
@@ -38,9 +35,7 @@ pub struct GraphEditor {
 impl Default for GraphEditor {
     fn default() -> Self {
         Self {
-            graph: Graph::new(),
-            comment_lines: CommentsGroup::new(),
-            canvas: Canvas::new(),
+            graph_workspace: GraphWorkspace::new(),
             node_editor: NodeEditor,
             edges_table: EdgesTable,
             edge_editor: EdgeEditor,
@@ -67,12 +62,9 @@ impl eframe::App for GraphEditor {
                 self.handle_error(err);
             }
 
-            self.canvas.setup(ctx, ui);
-
-            self.handle_interaction_logic();
-
-            self.canvas
-                .draw_components(&self.graph, &self.comment_lines, ui);
+            self.graph_workspace.setup(ctx, ui);
+            self.graph_workspace.run(ui);
+            self.handle_interactions();
 
             self.show_toast(ui);
 
@@ -106,7 +98,7 @@ impl GraphEditor {
             });
 
             if ui.button("New").clicked() {
-                self.graph.add_node();
+                self.graph_workspace.add_node();
             }
             ui.selectable_value(&mut self.selected_editor, EditorVariant::Node, "Node");
             ui.selectable_value(&mut self.selected_editor, EditorVariant::Edge, "Edge");
@@ -130,13 +122,14 @@ impl GraphEditor {
                     .inner_margin(Margin::same(4))
                     .show(ui, |ui| match self.selected_editor {
                         EditorVariant::Node => {
-                            self.node_editor.ui(ui, &mut self.graph);
+                            self.node_editor.ui(ui, &mut self.graph_workspace);
                         }
                         EditorVariant::Edge => {
-                            self.edge_editor.ui(ui, &mut self.graph);
+                            self.edge_editor.ui(ui, &mut self.graph_workspace);
                         }
                         EditorVariant::CommentLine => {
-                            self.comments_editor.ui(ui, &mut self.comment_lines);
+                            self.comments_editor
+                                .ui(ui, self.graph_workspace.comment_lines());
                         }
                     });
             });
@@ -148,7 +141,7 @@ impl GraphEditor {
             .min_height(10.0)
             .show_separator_line(true)
             .show(ui.ctx(), |ui| {
-                self.edges_table.ui(ui, &mut self.graph);
+                self.edges_table.ui(ui, &mut self.graph_workspace);
             });
     }
 
@@ -158,7 +151,7 @@ impl GraphEditor {
         match self.file_operation {
             FileOperation::FileOpen => {
                 if let Some(file_path) = self.file_dialog.take_picked() {
-                    self.graph = Graph::try_from(&file_path)?;
+                    self.graph_workspace.graph_from_file(&file_path)?;
 
                     self.update_current_file(ui, file_path);
                     self.file_operation = FileOperation::None;
@@ -176,14 +169,14 @@ impl GraphEditor {
                     return Ok(());
                 };
 
-                self.graph.save_to_file(&file_path)?;
+                self.graph_workspace.save_graph_to_file(&file_path)?;
 
                 self.toast = Some(Toast::success("Saved successfully"));
                 self.file_operation = FileOperation::None;
             }
             FileOperation::FileSaveAs => {
                 if let Some(file_path) = self.file_dialog.take_picked() {
-                    self.graph.save_to_file(&file_path)?;
+                    self.graph_workspace.save_graph_to_file(&file_path)?;
 
                     self.update_current_file(ui, file_path);
 
@@ -207,26 +200,17 @@ impl GraphEditor {
         Ok(())
     }
 
-    fn handle_interaction_logic(&mut self) {
+    fn handle_interactions(&mut self) {
         if self.selected_editor == EditorVariant::CommentLine {
             if self.comments_editor.draw_mode_active() {
-                self.canvas.handle_comment_draw(
-                    self.comments_editor.selected_stroke(),
-                    &mut self.comment_lines,
-                );
+                self.graph_workspace
+                    .handle_comment_draw(self.comments_editor.selected_stroke());
             }
             if self.comments_editor.erase_mode_active() {
-                self.canvas.handle_comment_erase(&mut self.comment_lines);
+                self.graph_workspace.handle_comment_erase();
             }
         } else {
-            self.canvas.handle_node_draging(&mut self.graph);
-            self.canvas.handle_node_selection(&mut self.graph);
-
-            let edge_created = self.canvas.handle_edge_creation(&mut self.graph);
-            // if edge_created is true => we clicked on edge's end => ignore this
-            if !edge_created {
-                self.canvas.handle_setting_edge_start(&self.graph);
-            }
+            self.graph_workspace.handle_graph_interactions();
         }
     }
 
@@ -268,8 +252,8 @@ impl GraphEditor {
 
             let image = crop_color_image(
                 &image,
-                self.canvas.painter_rect(),
-                self.canvas.pixels_per_point(),
+                self.graph_workspace.canvas_rect(),
+                self.graph_workspace.canvas_pixels_per_point(),
             )
             .ok_or(GraphEditorError::FailedTakeScreenshot)?;
 

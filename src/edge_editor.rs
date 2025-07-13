@@ -7,7 +7,7 @@ use crate::{
         MAX_EDGE_LABEL_PADDING, MAX_EDGE_LABEL_SIZE, MAX_EDGE_WIDTH, MAX_LOOP_EDGE_ANGLE,
         MIN_EDGE_LABEL_PADDING, MIN_EDGE_LABEL_SIZE, MIN_EDGE_WIDTH, MIN_LOOP_EDGE_ANGLE, UI_SPACE,
     },
-    graph::Graph,
+    graph_workspace::GraphWorkspace,
 };
 
 pub struct EdgeEditor;
@@ -17,28 +17,28 @@ impl EdgeEditor {
         "Edge Editor"
     }
 
-    pub fn ui(&mut self, ui: &mut egui::Ui, graph: &mut Graph) {
+    pub fn ui(&mut self, ui: &mut egui::Ui, graph_workspace: &mut GraphWorkspace) {
         ui.vertical_centered(|ui| {
             ui.label(RichText::new(self.name()).size(24.0));
         });
 
         ui.separator();
 
-        if graph.selected_edge_id().is_none() {
+        if graph_workspace.selected_edge_id().is_none() {
             ui.label("No edge selected");
         } else {
-            let selected_edge = graph.selected_edge().unwrap();
+            let selected_edge = graph_workspace.selected_edge().unwrap();
 
             ui.with_layout(Layout::top_down(egui::Align::Center), |ui| {
                 ui.label(format!(
                     "{} ➡ {}",
-                    &graph.nodes()[&selected_edge.start_id].label,
-                    &graph.nodes()[&selected_edge.end_id].label
+                    &graph_workspace.node(&selected_edge.start_id).unwrap().label,
+                    &graph_workspace.node(&selected_edge.end_id).unwrap().label
                 ));
             });
             ui.separator();
 
-            let selected_edge = graph.selected_edge_mut().unwrap();
+            let selected_edge = graph_workspace.selected_edge_mut().unwrap();
             ui.horizontal(|ui| {
                 color_edit_button_rgba(
                     ui,
@@ -138,7 +138,7 @@ impl EdgeEditor {
                     )
                     .clicked()
                 {
-                    graph.remove_selected_edge();
+                    graph_workspace.remove_selected_edge();
                 }
             });
         }

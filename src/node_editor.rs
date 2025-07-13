@@ -4,7 +4,8 @@ use eframe::egui::{
 
 use crate::{
     consts::{MAX_NODE_LABEL_SIZE, MAX_NODE_SIZE, MIN_NODE_LABEL_SIZE, MIN_NODE_SIZE, UI_SPACE},
-    graph::{Graph, NodeShape},
+    graph::NodeShape,
+    graph_workspace::GraphWorkspace,
 };
 
 pub struct NodeEditor;
@@ -14,14 +15,14 @@ impl NodeEditor {
         "Node Editor"
     }
 
-    pub fn ui(&mut self, ui: &mut egui::Ui, graph: &mut Graph) {
+    pub fn ui(&mut self, ui: &mut egui::Ui, graph_workspace: &mut GraphWorkspace) {
         ui.vertical_centered(|ui| {
             ui.label(RichText::new(self.name()).size(24.0));
         });
 
         ui.separator();
 
-        if let Some(selected_node) = graph.selected_node_mut() {
+        if let Some(selected_node) = graph_workspace.selected_node_mut() {
             ui.horizontal(|ui| {
                 color_edit_button_rgba(
                     ui,
@@ -88,7 +89,7 @@ impl NodeEditor {
                     )
                     .clicked()
                 {
-                    graph.remove_selected_node();
+                    graph_workspace.remove_selected_node();
                 }
             });
         } else {
