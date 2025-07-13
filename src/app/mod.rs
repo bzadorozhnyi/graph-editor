@@ -63,7 +63,7 @@ impl eframe::App for GraphEditor {
             }
 
             self.graph_workspace.setup(ctx, ui);
-            self.graph_workspace.run(ui);
+            self.graph_workspace.draw_components(ui);
             self.handle_interactions();
 
             self.show_toast(ui);

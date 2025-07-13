@@ -34,6 +34,46 @@ impl GraphWorkspace {
         self.canvas.setup(ctx, ui);
     }
 
+    pub fn draw_components(&mut self, ui: &mut Ui) {
+        self.canvas.draw_components(
+            &self.graph,
+            self.interactions.new_edge_start,
+            &self.comment_lines,
+            ui,
+        );
+    }
+
+    pub fn handle_graph_interactions(&mut self) {
+        self.handle_node_draging();
+        self.handle_node_selection();
+
+        let edge_created = self.handle_edge_creation();
+        // if edge_created is true => we clicked on edge's end => ignore this
+        if !edge_created {
+            self.handle_setting_edge_start();
+        }
+    }
+
+    pub fn graph_from_file(&mut self, file_path: &PathBuf) -> Result<(), GraphEditorError> {
+        self.graph = Graph::try_from(file_path)?;
+        Ok(())
+    }
+
+    pub fn save_graph_to_file(&mut self, file_path: &PathBuf) -> Result<(), GraphEditorError> {
+        self.graph.save_to_file(file_path)
+    }
+
+    pub fn canvas_rect(&self) -> Rect {
+        self.canvas.painter_rect()
+    }
+
+    pub fn canvas_pixels_per_point(&self) -> f32 {
+        self.canvas.pixels_per_point()
+    }
+}
+
+// node
+impl GraphWorkspace {
     pub fn selected_node_mut(&mut self) -> Option<&mut Node> {
         self.interactions
             .selected_node_id
@@ -101,17 +141,39 @@ impl GraphWorkspace {
         }
     }
 
-    pub fn handle_graph_interactions(&mut self) {
-        self.handle_node_draging();
-        self.handle_node_selection();
+    pub fn add_node(&mut self) {
+        self.graph.add_node();
+    }
 
-        let edge_created = self.handle_edge_creation();
-        // if edge_created is true => we clicked on edge's end => ignore this
-        if !edge_created {
-            self.handle_setting_edge_start();
+    pub fn remove_node(&mut self, id: NodeId) {
+        if let Some(selected_id) = self.interactions.selected_node_id {
+            if id == selected_id {
+                self.interactions.selected_node_id = None;
+            }
+        }
+
+        if let Some(dragging_id) = self.interactions.dragging_node_id {
+            if id == dragging_id {
+                self.interactions.dragging_node_id = None;
+            }
+        }
+
+        self.graph.remove_node(id);
+
+        // TODO: check if need this, looks weird
+        // meaning we removed edge when deleting edges connected to node
+        // but must set selected id = None
+        if self.selected_edge().is_none() {
+            self.set_selected_edge_id(None);
         }
     }
 
+    pub fn node(&self, id: &NodeId) -> Option<&Node> {
+        self.graph.node(id)
+    }
+}
+
+impl GraphWorkspace {
     /// Handle edge creation.
     /// Return true if edge was created
     pub fn handle_edge_creation(&mut self) -> bool {
@@ -166,42 +228,6 @@ impl GraphWorkspace {
         }
     }
 
-    pub fn run(&mut self, ui: &mut Ui) {
-        self.canvas.draw_components(
-            &self.graph,
-            self.interactions.new_edge_start,
-            &self.comment_lines,
-            ui,
-        );
-    }
-
-    pub fn add_node(&mut self) {
-        self.graph.add_node();
-    }
-
-    pub fn remove_node(&mut self, id: NodeId) {
-        if let Some(selected_id) = self.interactions.selected_node_id {
-            if id == selected_id {
-                self.interactions.selected_node_id = None;
-            }
-        }
-
-        if let Some(dragging_id) = self.interactions.dragging_node_id {
-            if id == dragging_id {
-                self.interactions.dragging_node_id = None;
-            }
-        }
-
-        self.graph.remove_node(id);
-
-        // TODO: check if need this, looks weird
-        // meaning we removed edge when deleting edges connected to node
-        // but must set selected id = None
-        if self.selected_edge().is_none() {
-            self.set_selected_edge_id(None);
-        }
-    }
-
     pub fn selected_edge_mut(&mut self) -> Option<&mut Edge> {
         self.interactions
             .selected_edge_id
@@ -239,10 +265,6 @@ impl GraphWorkspace {
         self.graph.remove_edge(id);
     }
 
-    pub fn node(&self, id: &NodeId) -> Option<&Node> {
-        self.graph.node(id)
-    }
-
     pub fn edges_ids(&self) -> Vec<EdgeId> {
         self.graph.edges().keys().cloned().collect()
     }
@@ -269,29 +291,13 @@ impl GraphWorkspace {
     pub fn add_edge(&mut self, start_id: NodeId, end_id: NodeId) {
         self.graph.add_edge(start_id, end_id);
     }
+}
 
-    pub fn graph_from_file(&mut self, file_path: &PathBuf) -> Result<(), GraphEditorError> {
-        self.graph = Graph::try_from(file_path)?;
-        Ok(())
-    }
-
-    pub fn save_graph_to_file(&mut self, file_path: &PathBuf) -> Result<(), GraphEditorError> {
-        self.graph.save_to_file(file_path)
-    }
-
-    pub fn canvas_rect(&self) -> Rect {
-        self.canvas.painter_rect()
-    }
-
-    pub fn canvas_pixels_per_point(&self) -> f32 {
-        self.canvas.pixels_per_point()
-    }
-
+// comment lines
+impl GraphWorkspace {
     pub fn handle_comment_draw(&mut self, stroke: Stroke) {
-        self.canvas.handle_comment_draw(
-            stroke,
-            &mut self.comment_lines,
-        );
+        self.canvas
+            .handle_comment_draw(stroke, &mut self.comment_lines);
     }
 
     pub fn handle_comment_erase(&mut self) {
