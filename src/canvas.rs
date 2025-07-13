@@ -19,7 +19,6 @@ use crate::{
 pub struct Canvas {
     response: Option<Response>,
     painter: Option<Painter>,
-    new_edge_start: Option<NodeId>,
 }
 
 // creation, setup and utils
@@ -28,7 +27,7 @@ impl Canvas {
         Default::default()
     }
 
-    fn response(&self) -> &Response {
+    pub fn response(&self) -> &Response {
         self.response
             .as_ref()
             .expect("Canvas::setup() must be called first!")
@@ -58,7 +57,7 @@ impl Canvas {
         self.painter = Some(painter);
     }
 
-    fn set_cursor_icon(&self, cursor_icon: egui::CursorIcon) {
+    pub fn set_cursor_icon(&self, cursor_icon: egui::CursorIcon) {
         self.response().ctx.set_cursor_icon(cursor_icon);
     }
 }
@@ -66,7 +65,7 @@ impl Canvas {
 // nodes
 impl Canvas {
     /// Evaluate new position of node, which satisfy painter's bounds constraints
-    fn bounds_constraint_correction(&self, node: &Node, pointer_pos: Pos2) -> Pos2 {
+    pub fn bounds_constraint_correction(&self, node: &Node, pointer_pos: Pos2) -> Pos2 {
         let canvas_rect = self.response().rect;
 
         let new_x = if pointer_pos.x - node.size < canvas_rect.min.x {
@@ -88,49 +87,6 @@ impl Canvas {
         Pos2::new(new_x, new_y)
     }
 
-    /// Handle node dragging.
-    pub fn handle_node_draging(&mut self, graph: &mut Graph) {
-        let pointer_pos = match self.response().interact_pointer_pos() {
-            Some(pos) => pos,
-            None => {
-                // any node is not node dragging
-                graph.set_dragging_node(None);
-                return;
-            }
-        };
-
-        self.set_cursor_icon(egui::CursorIcon::Grabbing);
-
-        // drag selected node to poiter pos
-        if let Some(id) = graph.dragging_node() {
-            let node = graph.nodes().get(&id).unwrap();
-            graph.node_mut(&id).unwrap().position =
-                self.bounds_constraint_correction(node, pointer_pos);
-
-            return;
-        }
-
-        // if pointer pos is the same as some node => mark node as dragging node
-        for (id, node) in graph.nodes().iter() {
-            if node.is_clicked(pointer_pos) {
-                graph.set_dragging_node(Some(*id));
-                break;
-            }
-        }
-    }
-
-    /// Mark one node selected if pointer position same as this node position.
-    pub fn handle_node_selection(&mut self, graph: &mut Graph) {
-        if let Some(pointer_pos) = self.response().interact_pointer_pos() {
-            for (id, node) in graph.nodes() {
-                if node.is_clicked(pointer_pos) {
-                    graph.set_selected_node_id(Some(*id));
-                    break;
-                }
-            }
-        }
-    }
-
     /// Draw all nodes.
     fn draw_nodes(&mut self, graph: &Graph) {
         for node in graph.nodes().values() {
@@ -141,63 +97,9 @@ impl Canvas {
 
 // edges
 impl Canvas {
-    /// Handle edge creation.
-    /// Return true if edge was created
-    pub fn handle_edge_creation(&mut self, graph: &mut Graph) -> bool {
-        // if Escape pressed => we dont' creating edge anymore
-        if self
-            .response()
-            .ctx
-            .input(|i| i.key_pressed(egui::Key::Escape))
-        {
-            self.new_edge_start = None;
-            return false;
-        }
-
-        // if right mouse button was not clicked => ignore
-        if !self.response().secondary_clicked() {
-            return false;
-        }
-
-        if let Some(edge_start) = self.new_edge_start {
-            let pointer_pos = self.response().interact_pointer_pos().unwrap();
-
-            // if some node has same pos as pointer
-            // then creating edge (edge_start; node)
-            for (id, node) in graph.nodes() {
-                if node.is_clicked(pointer_pos) {
-                    graph.add_edge(edge_start, *id);
-                    self.new_edge_start = None;
-
-                    return true;
-                }
-            }
-        }
-
-        false
-    }
-
-    /// Handle setting start of edge (first selected node).
-    /// (Edge is not created at this moment)
-    pub fn handle_setting_edge_start(&mut self, graph: &Graph) {
-        if self.response().secondary_clicked() {
-            let pointer_pos = self.response().interact_pointer_pos().unwrap();
-
-            // if some node has same pos as pointer
-            // then set edge start as node id
-            for (id, node) in graph.nodes() {
-                if node.is_clicked(pointer_pos) {
-                    self.new_edge_start = Some(*id);
-                    break;
-                }
-            }
-        }
-    }
-
     /// Draw possible edge from new_edge_start node to pointer pos.
-    fn draw_possible_edge(&mut self, graph: &Graph) {
-        if let (Some(edge_start), Some(pointer_pos)) =
-            (self.new_edge_start, self.response().hover_pos())
+    fn draw_possible_edge(&mut self, new_edge_start: Option<NodeId>, graph: &Graph) {
+        if let (Some(edge_start), Some(pointer_pos)) = (new_edge_start, self.response().hover_pos())
         {
             self.set_cursor_icon(egui::CursorIcon::PointingHand);
             let start_node = &graph.nodes()[&edge_start];
@@ -493,8 +395,14 @@ impl Canvas {
     }
 
     /// Draw possible edge, all nodes and edges, comment lines.
-    pub fn draw_components(&mut self, graph: &Graph, comment_lines: &CommentsGroup, ui: &mut Ui) {
-        self.draw_possible_edge(graph);
+    pub fn draw_components(
+        &mut self,
+        graph: &Graph,
+        new_edge_start: Option<NodeId>,
+        comment_lines: &CommentsGroup,
+        ui: &mut Ui,
+    ) {
+        self.draw_possible_edge(new_edge_start, graph);
         self.draw_edges(ui, graph);
         self.draw_nodes(graph);
         self.draw_comment_lines(comment_lines);

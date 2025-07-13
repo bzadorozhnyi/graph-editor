@@ -6,6 +6,7 @@ pub mod edge_editor;
 pub mod edges_table;
 pub mod error;
 pub mod graph;
+pub mod graph_workspace;
 pub mod node_editor;
 pub mod toast;
 pub mod utils;
