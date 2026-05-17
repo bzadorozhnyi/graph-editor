@@ -52,12 +52,17 @@ impl Node {
 
     fn draw_shape(&self, painter: &Painter) {
         match self.shape {
-            NodeShape::Circle => painter.circle(self.position, self.size, self.color, Stroke::NONE),
+            NodeShape::Circle => painter.circle(
+                self.position,
+                self.size,
+                self.color,
+                Stroke::new(2.0, Color32::BLACK),
+            ),
             NodeShape::Square => painter.rect(
                 Rect::from_center_size(self.position, Vec2::splat(2.0 * self.size)),
                 2.0,
                 self.color,
-                Stroke::NONE,
+                Stroke::new(2.0, Color32::BLACK),
                 eframe::egui::StrokeKind::Inside,
             ),
         };

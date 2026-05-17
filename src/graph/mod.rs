@@ -113,7 +113,7 @@ impl Graph {
 
         Ok(())
     }
-    
+
     pub fn edge(&self, id: &EdgeId) -> Option<&Edge> {
         self.edges.get(id)
     }
@@ -126,6 +126,9 @@ impl TryFrom<&PathBuf> for Graph {
         let file: File = File::open(value).map_err(|_| GraphEditorError::FailedOpenFile)?;
         let reader = BufReader::new(file);
 
-        serde_json::from_reader(reader).map_err(|_| GraphEditorError::FailedOpenFile)
+        serde_json::from_reader(reader).map_err(|err| {
+            println!("{:?}", err);
+            GraphEditorError::FailedOpenFile
+        })
     }
 }

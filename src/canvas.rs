@@ -143,6 +143,39 @@ impl Canvas {
         (start, end)
     }
 
+    fn draw_label_background(&self, control: Pos2, edge: &Edge, galley_size: Vec2, angle: f32) {
+        let rect = egui::Rect::from_center_size(
+            control,
+            galley_size + egui::vec2(edge.padding_x, edge.padding_y),
+        ).expand(3.0);
+
+        let center = rect.center();
+
+        let cos = angle.cos();
+        let sin = angle.sin();
+
+        let rotate = |p: Pos2| {
+            let v = p - center;
+            Pos2::new(
+                center.x + v.x * cos - v.y * sin,
+                center.y + v.x * sin + v.y * cos,
+            )
+        };
+
+        let points = vec![
+            rotate(rect.left_top()),
+            rotate(rect.right_top()),
+            rotate(rect.right_bottom()),
+            rotate(rect.left_bottom()),
+        ];
+
+        self.painter().add(Shape::convex_polygon(
+            points,
+            Color32::WHITE,
+            egui::Stroke::NONE,
+        ));
+    }
+
     /// Draw edge label.
     fn draw_edge_label(&self, ui: &mut Ui, edge: &Edge, start: Pos2, control: Pos2, end: Pos2) {
         let text = WidgetText::RichText(RichText::new(&edge.label).size(edge.label_size));
@@ -167,6 +200,8 @@ impl Canvas {
 
         // Adjust the position to properly center the text
         let centered_position = control - Vec2::new(offset_x, offset_y);
+
+        self.draw_label_background(control, edge, galley_size, angle);
 
         self.painter().add(
             TextShape::new(centered_position, text_galley.clone(), Color32::BLACK)
